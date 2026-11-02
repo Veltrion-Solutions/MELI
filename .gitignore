@@ -1,0 +1,15 @@
+# Reference materials
+ref/
+
+# Next.js
+.next/
+out/
+next-env.d.ts
+*.tsbuildinfo
+
+# Dependencies
+node_modules/
+
+# Env
+.env*
+!.env.example

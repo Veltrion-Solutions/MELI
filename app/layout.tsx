@@ -8,6 +8,20 @@ const sans = Jost({ subsets: ["latin"], weight: ["300", "400", "500"], variable:
 export const metadata: Metadata = {
   title: "MELI - Wear MELI",
   description: "Soft days, well dressed. Easy dresses, tops, skirts and pants designed in Sri Lanka.",
+  icons: {
+    icon: "/assets/Logo.jpeg",
+    shortcut: "/assets/Logo.jpeg",
+    apple: "/assets/Logo.jpeg",
+  },
+  openGraph: {
+    title: "MELI - Wear MELI",
+    description: "Soft days, well dressed. Easy dresses, tops, skirts and pants designed in Sri Lanka.",
+    images: [{ url: "/assets/Logo.jpeg", alt: "MELI logo" }],
+  },
+  twitter: {
+    card: "summary_large_image",
+    images: ["/assets/Logo.jpeg"],
+  },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

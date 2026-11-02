@@ -6,7 +6,7 @@ const serif = Cormorant_Garamond({ subsets: ["latin"], weight: ["300", "400", "5
 const sans = Jost({ subsets: ["latin"], weight: ["300", "400", "500"], variable: "--font-sans" });
 
 export const metadata: Metadata = {
-  title: "MELI — Wear MELI",
+  title: "MELI - Wear MELI",
   description: "Soft days, well dressed. Easy dresses, tops, skirts and pants designed in Sri Lanka.",
 };
 

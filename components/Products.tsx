@@ -11,16 +11,10 @@ export default function Products() {
 
   return (
     <section className="section products" id="shop">
-      <div className="container">
-        <div className="section-head split">
-          <div>
-            <p className="eyebrow">{filter ? "In focus" : "Just landed"}</p>
-            <h2>{title}</h2>
-          </div>
-          <div className="head-side">
-            {filter && <button className="show-all" onClick={() => showCategory(null)}>Show all</button>}
-            <p>Soft neutrals, sweet gingham and breezy maxis — pieces to wear on repeat.</p>
-          </div>
+      <div className="wide">
+        <div className="section-head center">
+          <h2>{title}</h2>
+          {filter && <button className="show-all" onClick={() => showCategory(null)}>Show all</button>}
         </div>
         <div className="grid-4 product-grid">
           {list.map((p) => (
@@ -31,6 +25,7 @@ export default function Products() {
                 <button className="add-btn" onClick={addToBag}>Add to bag</button>
               </div>
               <h3>{p.name}</h3>
+              <p className="sizes">UK 04 · 06 · 08 · 10 · 12</p>
               <p className="price">{formatPrice(p.price)}</p>
             </article>
           ))}

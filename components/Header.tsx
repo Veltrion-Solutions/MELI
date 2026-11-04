@@ -18,9 +18,9 @@ export default function Header() {
 
   return (
     <>
-      <div className="announce">Complimentary shipping over Rs 12,000 · Island-wide delivery · 30-day returns</div>
+      <div className="announce">Free shipping on orders above Rs 12,000</div>
       <header className="header">
-        <div className="container header-inner">
+        <div className="wide header-inner">
           <button className="menu-btn" aria-label="Menu" aria-expanded={open} onClick={() => setOpen((o) => !o)}>
             <span /><span />
           </button>
@@ -37,7 +37,7 @@ export default function Header() {
           </nav>
           <a href="#top" className="logo" aria-label="MELI home">
             <span className="logo-mark">MELI</span>
-            <span className="logo-sub">Wear MELI</span>
+            
           </a>
           <div className="header-right">
             <button className="bag" aria-label={`Shopping bag, ${cartCount} items`}>

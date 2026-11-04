@@ -21,14 +21,20 @@ app/
   page.tsx          Home page: assembles all sections
   globals.css       All styles, design tokens and responsive rules
 components/
-  Header.tsx        Announcement bar, sticky nav, bag counter
-  Hero.tsx          Intro with arch image
+  Header.tsx        Announcement bar, scroll-up sticky nav, mega menu, search + bag
+  HeroSlider.tsx    Fade slider (3s autoplay, slow zoom, dots)
+  SplitBanner.tsx   Full-bleed side-by-side image tiles (hover to expand)
   Categories.tsx    Four category tiles (filter the product grid)
-  Products.tsx      Product grid with "Add to bag"
-  Story.tsx         Brand story, split image/text
+  ProductRow.tsx    Carousel row with arrows and "Add to bag"
+  Products.tsx      "New arrivals" (filterable) and "Best sellers" rows
   Reviews.tsx       Customer reviews
-  Newsletter.tsx    Email sign-up
-  Footer.tsx        Links and copyright
+  Ticker.tsx        Looping text strip
+  ParallaxBanner.tsx Full-width parallax image banner
+  Reveal.tsx        Fade-up-on-scroll wrapper
+  CartDrawer.tsx    Slide-in bag with free-shipping progress
+  SearchOverlay.tsx Search panel
+  MobileDock.tsx    Bottom nav bar on phones
+  Footer.tsx        Reveal-on-scroll footer, accordions on phones, newsletter
   ShopProvider.tsx  Shared state: category filter and bag count
   Photo.tsx         next/image wrapper with a placeholder fallback
 lib/
@@ -43,14 +49,14 @@ ref/                Design reference screenshots (not used at runtime)
 
 - **Products and categories:** edit `lib/products.ts`. Each product has `id`, `name`, `price` (LKR), `category`, optional `badge` and `image`.
 - **Images:** put files in `public/images/` and set the `image` path, e.g. `/images/marisol-maxi.jpg`. Without an `image`, a grey placeholder is shown.
-- **Hero and story photos:** `public/images/hero.jpg` and `public/images/story.jpg`.
+- **Banner photos:** `public/images/hero.jpg` and `public/images/story.jpg`; banner copy is in `app/page.tsx`.
 - **Styling:** colours, fonts and layout width are CSS variables at the top of `app/globals.css`.
 
 ## Notes
 
 - The photos in `public/images/` were cropped from mockup screenshots, so they are low resolution. Replace them with original photos using the same file names for a sharper result.
-- The bag is a visual counter only; there is no checkout or backend yet.
-- The newsletter form does not send data anywhere yet.
+- The bag keeps items in memory only (lost on refresh); there is no checkout or backend yet.
+- The newsletter form (in the footer) does not send data anywhere yet.
 
 ## License
 

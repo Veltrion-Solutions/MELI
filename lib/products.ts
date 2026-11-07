@@ -8,8 +8,6 @@ export type Product = {
   badge?: "New" | "Best seller";
   /** Path under /public, e.g. "/images/marisol-maxi.jpg". Placeholder is shown until set. */
   image?: string;
-  /** Optional extra photos; cross-faded on hover. */
-  images?: string[];
 };
 
 export const CATEGORIES: { id: Category; label: string; image?: string }[] = [
@@ -26,7 +24,7 @@ export const PRODUCTS: Product[] = [
   { id: "cerise-gingham-midi", name: "Cerise Gingham Midi", price: 8400, category: "skirts", image: "/images/cerise-gingham-midi.jpg" },
   { id: "azure-tiered-maxi", name: "Azure Tiered Maxi", price: 9400, category: "dresses", badge: "Best seller", image: "/images/azure-tiered-maxi.jpg" },
   { id: "sand-tailored-wide-leg", name: "Sand Tailored Wide-Leg", price: 10200, category: "pants", image: "/images/sand-tailored-wide-leg.jpg" },
-  { id: "marisol-maxi", name: "Marisol Maxi", price: 11800, category: "dresses", image: "/images/marisol-maxi.jpg", images: ["/images/marisol-maxi.jpg", "/images/hero.jpg"] },
+  { id: "marisol-maxi", name: "Marisol Maxi", price: 11800, category: "dresses", image: "/images/marisol-maxi.jpg" },
   { id: "linden-belted-wide-leg", name: "Linden Belted Wide-Leg", price: 10800, category: "pants", image: "/images/linden-belted-wide-leg.jpg" },
 ];
 

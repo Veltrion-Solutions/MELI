@@ -7,14 +7,14 @@ const COLS = [
 export default function Footer() {
   return (
     <footer className="footer">
-      <div className="wide footer-grid">
+      <div className="container footer-grid">
         <div>
           <p className="footer-logo">MELI</p>
           <p className="footer-tag">Soft days, well dressed.</p>
         </div>
         {COLS.map((c) => (
           <div key={c.title}>
-            <p className="foot-title">{c.title}</p>
+            <p className="eyebrow">{c.title}</p>
             <ul>{c.links.map((l) => <li key={l}><a href="#">{l}</a></li>)}</ul>
           </div>
         ))}

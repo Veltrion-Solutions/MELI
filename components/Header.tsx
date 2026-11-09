@@ -1,17 +1,19 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useShop } from "./ShopProvider";
-import type { Filter } from "./ShopProvider";
 
-const NAV: { label: string; target: Filter }[] = [
-  { label: "New", target: "new" },
-  { label: "Dresses", target: "dresses" },
-  { label: "Tops", target: "tops" },
+const NAV = [
+  { label: "New", href: "/new" },
+  { label: "Dresses", href: "/dresses" },
+  { label: "Tops", href: "/tops" },
 ];
 
 export default function Header() {
-  const { cartCount, filter, showCategory } = useShop();
+  const { cartCount } = useShop();
+  const pathname = usePathname();
   const [open, setOpen] = useState(false);
 
   return (
@@ -24,19 +26,20 @@ export default function Header() {
           </button>
           <nav className={`nav ${open ? "open" : ""}`} aria-label="Primary">
             {NAV.map((n) => (
-              <button
+              <Link
                 key={n.label}
-                className={`nav-link${n.target === filter ? " active" : ""}`}
-                onClick={() => { showCategory(n.target); setOpen(false); }}
+                href={n.href}
+                className={`nav-link${pathname === n.href ? " active" : ""}`}
+                onClick={() => setOpen(false)}
               >
                 {n.label}
-              </button>
+              </Link>
             ))}
           </nav>
-          <a href="#top" className="logo" aria-label="MELI home">
+          <Link href="/" className="logo" aria-label="MELI home">
             <span className="logo-mark">MELI</span>
             <span className="logo-sub">Wear MELI</span>
-          </a>
+          </Link>
           <div className="header-right">
             <button className="bag" aria-label={`Shopping bag, ${cartCount} items`}>
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden>

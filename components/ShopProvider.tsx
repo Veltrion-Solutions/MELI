@@ -3,7 +3,7 @@
 import { createContext, useCallback, useContext, useMemo, useState } from "react";
 import type { Category } from "@/lib/products";
 
-export type Filter = Category | "new" | null;
+type Filter = Category | null;
 
 type Shop = {
   cartCount: number;

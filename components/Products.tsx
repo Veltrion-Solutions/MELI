@@ -6,8 +6,8 @@ import { CATEGORIES, PRODUCTS, formatPrice } from "@/lib/products";
 
 export default function Products() {
   const { filter, showCategory, addToBag } = useShop();
-  const list = !filter ? PRODUCTS : filter === "new" ? PRODUCTS.filter((p) => p.badge === "New") : PRODUCTS.filter((p) => p.category === filter);
-  const title = !filter ? "New arrivals" : filter === "new" ? "New in" : CATEGORIES.find((c) => c.id === filter)!.label;
+  const list = filter ? PRODUCTS.filter((p) => p.category === filter) : PRODUCTS;
+  const title = filter ? CATEGORIES.find((c) => c.id === filter)!.label : "New arrivals";
 
   return (
     <section className="section products" id="shop">

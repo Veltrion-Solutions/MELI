@@ -1,8 +1,6 @@
-import Photo from "./Photo";
-import { PRODUCTS, FEATURED_ID, formatPrice } from "@/lib/products";
+import HeroSlides from "./HeroSlides";
 
 export default function Hero() {
-  const featured = PRODUCTS.find((p) => p.id === FEATURED_ID)!;
   return (
     <section className="hero" id="top">
       <div className="container hero-grid">
@@ -21,15 +19,7 @@ export default function Hero() {
             <a href="#story" className="btn btn-outline">Our story</a>
           </div>
         </div>
-        <div className="hero-visual">
-          <div className="hero-arch">
-            <Photo src={featured.image} alt={`Model wearing the ${featured.name}`} sizes="(max-width: 900px) 80vw, 355px" priority />
-          </div>
-          <div className="featured-card">
-            <span className="eyebrow">Featured</span>
-            <p>{featured.name} · {formatPrice(featured.price)}</p>
-          </div>
-        </div>
+        <HeroSlides />
       </div>
     </section>
   );

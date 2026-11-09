@@ -1,0 +1,118 @@
+/* ==========================================================
+   MELI motion — scroll reveals, hero slideshow, smooth hovers.
+   Imported after theme.css. Delete this file + its import in
+   layout.tsx (and <ScrollEffects />) to remove all animation.
+   ========================================================== */
+
+:root { --ease: cubic-bezier(0.21, 0.6, 0.35, 1); }
+
+/* ---------- Scroll reveal: fade-up, staggered via --d ---------- */
+.reveal { opacity: 0; }
+.reveal.in { animation: fade-up 0.8s var(--ease) var(--d, 0ms) both; }
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(28px); }
+  to { opacity: 1; transform: none; }
+}
+
+/* ---------- Header: soft shadow once the page is scrolled ---------- */
+.header { transition: box-shadow 0.6s ease, background-color 0.6s ease; }
+html[data-scrolled] .header { box-shadow: 0 8px 28px rgba(0, 0, 0, 0.07); }
+
+/* ---------- Hero slideshow: cross-fade + slow zoom ---------- */
+.hero-slide { position: absolute; inset: 0; opacity: 0; transition: opacity 1s ease; }
+.hero-slide.active { opacity: 1; z-index: 1; }
+.hero-slide .photo { transform: scale(1.1); transition: transform 2s var(--ease); }
+.hero-slide.active .photo { transform: scale(1); }
+.featured-card { z-index: 2; transition: opacity 0.4s ease; }
+.hero-dots { display: flex; justify-content: center; gap: 8px; margin-top: 16px; }
+.hero-dot { width: 8px; height: 8px; border-radius: 999px; background: #cfcfcf; transition: width 0.5s var(--ease), background-color 0.5s ease; }
+.hero-dot:hover { background: #8a8a8a; }
+.hero-dot.active { width: 28px; background: #181818; }
+
+/* ---------- Hover motion ---------- */
+.product-alt { transition: opacity 0.7s ease; }
+.cat-card .photo { transition: transform 0.9s var(--ease); }
+.cat-card:hover .photo { transform: scale(1.05); }
+.cat-card .cat-label { transition: letter-spacing 0.5s var(--ease); }
+.cat-card:hover .cat-label { letter-spacing: 0.1em; }
+.btn, .filter-toggle { transition: background-color 0.6s ease-out, color 0.6s ease-out, border-color 0.6s ease-out, transform 0.6s ease-out; }
+.btn:hover { transform: translateY(-2px); }
+.add-btn { transition: opacity 0.3s ease, transform 0.3s ease, background-color 0.6s ease-out; }
+.add-btn:hover { background: #000; }
+.nav-link { transition: color 0.4s ease, text-decoration-color 0.4s ease; }
+.bag { transition: transform 0.4s var(--ease); }
+.bag:hover { transform: scale(1.12); }
+.bag-count { animation: pop 0.4s var(--ease); }
+@keyframes pop { from { transform: scale(0.4); } to { transform: scale(1); } }
+.promo-img .photo { transition: transform 1.2s var(--ease); }
+.promo-img:hover .photo { transform: scale(1.04); }
+
+/* Filter panel slides open */
+.filters:not([hidden]) { animation: panel-in 0.45s var(--ease) both; }
+@keyframes panel-in { from { opacity: 0; transform: translateX(-14px); } to { opacity: 1; transform: none; } }
+.collection-results .product { animation: card-in 0.5s var(--ease) both; }
+@keyframes card-in { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
+
+/* ---------- Respect reduced-motion preferences ---------- */
+@media (prefers-reduced-motion: reduce) {
+  .reveal { opacity: 1 !important; }
+  .reveal.in, .filters:not([hidden]), .collection-results .product, .bag-count { animation: none !important; }
+  .hero-slide .photo { transform: none !important; }
+  .hero-slide { transition: none; }
+  .btn:hover, .bag:hover, .cat-card:hover .photo, .promo-img:hover .photo { transform: none; }
+}
+
+/* ==========================================================
+   Hero banner: full-bleed backdrop + header floating over it
+   ========================================================== */
+.hero { position: relative; overflow: hidden; }
+.hero-copy, .hero-visual { position: relative; z-index: 1; }
+.hero-backdrop { position: absolute; inset: 0; z-index: 0; overflow: hidden; background: #f3f3f3; }
+.hero-backdrop::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(255, 255, 255, 0.55), rgba(255, 255, 255, 0.82)); }
+.hero-bgslide { position: absolute; inset: -12%; opacity: 0; transition: opacity 1.2s ease; filter: blur(46px) saturate(1.15); }
+.hero-bgslide.active { opacity: 1; }
+.hero-bgslide > * { position: absolute; inset: 0; }
+
+/* Header floats transparent over the hero, turns solid on scroll (0.8s, like the reference) */
+body:has(.hero) .header { margin-bottom: -73px; transition: background-color 0.8s ease, box-shadow 0.8s ease, border-color 0.8s ease, backdrop-filter 0.8s ease; }
+html:not([data-scrolled]) body:has(.hero) .header { background: transparent; border-bottom-color: transparent; box-shadow: none; }
+body:has(.hero) .hero { padding-top: calc(73px + clamp(24px, 4vw, 64px)); }
+@media (max-width: 900px) {
+  body:has(.hero) .header { margin-bottom: -61px; }
+  body:has(.hero) .hero { padding-top: calc(61px + 24px); }
+  html:not([data-scrolled]) body:has(.hero) .nav.open { background: #fff; }
+}
+
+/* Caption re-animates on each slide change */
+.featured-card { animation: fade-up 0.7s var(--ease) both; }
+.hero-slide .photo { transform-origin: 50% 40%; }
+
+/* ==========================================================
+   New arrivals carousel (scroll-snap + arrow buttons)
+   ========================================================== */
+.product-carousel {
+  --gap: 16px; --per: 4;
+  display: grid; grid-auto-flow: column;
+  grid-auto-columns: calc((100% - (var(--per) - 1) * var(--gap)) / var(--per));
+  column-gap: var(--gap);
+  overflow-x: auto; overscroll-behavior-x: contain; scroll-snap-type: x mandatory; scrollbar-width: none;
+  padding-bottom: 4px;
+}
+.product-carousel::-webkit-scrollbar { display: none; }
+.product-carousel > .product { scroll-snap-align: start; }
+.carousel-arrows { display: flex; gap: 10px; margin-left: 8px; }
+.carousel-arrow {
+  width: 40px; height: 40px; border-radius: 50%; border: 1px solid #181818; background: #181818; color: #fff;
+  font-size: 16px; line-height: 1; display: grid; place-items: center;
+  transition: background-color 0.5s ease-out, color 0.5s ease-out, opacity 0.4s ease, transform 0.4s var(--ease);
+}
+.carousel-arrow:hover:not(:disabled) { background: #fff; color: #181818; transform: scale(1.06); }
+.carousel-arrow:disabled { opacity: 0.25; cursor: default; border-color: #cfcfcf; background: #f1f1f1; color: #181818; }
+@media (max-width: 1100px) { .product-carousel { --per: 3; } }
+@media (max-width: 900px) { .product-carousel { --per: 2.3; --gap: 12px; } .head-side { flex-wrap: wrap; } }
+@media (max-width: 600px) { .product-carousel { --per: 1.7; } .carousel-arrows { margin-left: 0; } }
+@media (prefers-reduced-motion: reduce) {
+  .featured-card { animation: none; }
+  .hero-bgslide { transition: none; }
+  .product-carousel { scroll-behavior: auto; }
+}

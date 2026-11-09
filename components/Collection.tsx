@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import Photo from "./Photo";
 import { useShop } from "./ShopProvider";
@@ -14,11 +14,6 @@ export const COLLECTIONS: Record<CollectionKey, { title: string; eyebrow: string
   tops: { title: "Tops", eyebrow: "Collection" },
 };
 
-const PRICE_RANGES = [
-  { id: "under-7000", label: "Under Rs 7,000", test: (n: number) => n < 7000 },
-  { id: "7000-9999", label: "Rs 7,000 – 9,999", test: (n: number) => n >= 7000 && n < 10000 },
-  { id: "10000-plus", label: "Rs 10,000 and above", test: (n: number) => n >= 10000 },
-];
 const TAGS = [
   { id: "New", label: "New arrivals" },
   { id: "Best seller", label: "Best sellers" },
@@ -29,6 +24,7 @@ const SORTS = [
   { id: "price-desc", label: "Price: high to low" },
 ] as const;
 type SortId = (typeof SORTS)[number]["id"];
+const COLUMN_OPTIONS = [2, 3, 4, 5];
 
 const toggle = (arr: string[], v: string) => (arr.includes(v) ? arr.filter((x) => x !== v) : [...arr, v]);
 
@@ -40,28 +36,29 @@ export default function Collection({ name }: { name: CollectionKey }) {
   const hasFilters = name !== "new";
 
   const [sort, setSort] = useState<SortId>("featured");
-  const [prices, setPrices] = useState<string[]>([]);
   const [tags, setTags] = useState<string[]>([]);
-  const [drawer, setDrawer] = useState(false);
-
-  useEffect(() => {
-    if (!drawer) return;
-    const onKey = (e: KeyboardEvent) => e.key === "Escape" && setDrawer(false);
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [drawer]);
+  const [min, setMin] = useState("");
+  const [max, setMax] = useState("");
+  const [panel, setPanel] = useState(false);
+  const [cols, setCols] = useState(4);
 
   const base = useMemo(() => PRODUCTS.filter((p) => (name === "new" ? p.badge === "New" : p.category === name)), [name]);
+  const maxPrice = useMemo(() => Math.max(0, ...base.map((p) => p.price)), [base]);
+
   const list = useMemo(() => {
     let out = base;
-    if (prices.length) out = out.filter((p) => PRICE_RANGES.some((r) => prices.includes(r.id) && r.test(p.price)));
+    const lo = min === "" ? null : Number(min);
+    const hi = max === "" ? null : Number(max);
+    if (lo !== null && !Number.isNaN(lo)) out = out.filter((p) => p.price >= lo);
+    if (hi !== null && !Number.isNaN(hi)) out = out.filter((p) => p.price <= hi);
     if (tags.length) out = out.filter((p) => p.badge && tags.includes(p.badge));
     if (sort !== "featured") out = [...out].sort((a, b) => (sort === "price-asc" ? a.price - b.price : b.price - a.price));
     return out;
-  }, [base, prices, tags, sort]);
+  }, [base, tags, min, max, sort]);
 
-  const active = prices.length + tags.length;
-  const clear = () => { setPrices([]); setTags([]); };
+  const active = tags.length + (min !== "" || max !== "" ? 1 : 0);
+  const clear = () => { setTags([]); setMin(""); setMax(""); };
+  const count = (tag: string) => base.filter((p) => p.badge === tag).length;
 
   return (
     <section className="section products collection">
@@ -78,68 +75,71 @@ export default function Collection({ name }: { name: CollectionKey }) {
 
         <div className="collection-toolbar">
           {hasFilters && (
-            <button type="button" className="filter-toggle" onClick={() => setDrawer(true)} aria-expanded={drawer}>
+            <button type="button" className="filter-toggle" onClick={() => setPanel((o) => !o)} aria-expanded={panel} aria-controls="filter-panel">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                <path d="M3 5h18l-7 8v6l-4 2v-8L3 5Z" />
+              </svg>
               Filter{active > 0 ? ` (${active})` : ""}
             </button>
           )}
-          <p className="result-count">{list.length} {list.length === 1 ? "piece" : "pieces"}</p>
+          <p className="result-count">{list.length} {list.length === 1 ? "Product" : "Products"}</p>
+          <div className="cols-switch" role="group" aria-label="Products per row">
+            {COLUMN_OPTIONS.map((n) => (
+              <button key={n} type="button" className="cols-btn" aria-pressed={cols === n} aria-label={`${n} per row`} onClick={() => setCols(n)}>
+                {Array.from({ length: n }, (_, i) => <i key={i} />)}
+              </button>
+            ))}
+          </div>
           <label className="sort-select">
-            <span>Sort by</span>
-            <select value={sort} onChange={(e) => setSort(e.target.value as SortId)}>
-              {SORTS.map((s) => <option key={s.id} value={s.id}>{s.label}</option>)}
+            <span className="sr-only">Sort by</span>
+            <select value={sort} onChange={(e) => setSort(e.target.value as SortId)} aria-label="Sort by">
+              {SORTS.map((s) => <option key={s.id} value={s.id}>{s.id === "featured" ? "Sort by" : s.label}</option>)}
             </select>
           </label>
         </div>
 
-        <div className={hasFilters ? "collection-layout" : undefined}>
+        <div className={`collection-layout${hasFilters && panel ? " panel-open" : ""}`} style={{ ["--cols" as string]: cols }}>
           {hasFilters && (
-            <>
-              <div className={`filter-overlay${drawer ? " open" : ""}`} onClick={() => setDrawer(false)} />
-              <aside className={`filters${drawer ? " open" : ""}`} aria-label="Filters">
-                <div className="filters-head">
-                  <p className="filter-heading">Filter</p>
-                  <button type="button" className="filters-close" aria-label="Close filters" onClick={() => setDrawer(false)}>×</button>
+            <aside id="filter-panel" className="filters" aria-label="Filters" hidden={!panel}>
+              <div className="filter-group">
+                <p className="filter-title">Availability</p>
+                {TAGS.map((t) => (
+                  <label key={t.id} className="filter-opt">
+                    <input type="checkbox" checked={tags.includes(t.id)} onChange={() => setTags((p) => toggle(p, t.id))} />
+                    <span>{t.label}</span>
+                    <span className="filter-count">({count(t.id)})</span>
+                  </label>
+                ))}
+              </div>
+              <div className="filter-group">
+                <p className="filter-title">Price</p>
+                <div className="price-row">
+                  <label className="price-field">From
+                    <span className="price-input">Rs <input type="number" inputMode="numeric" min={0} placeholder="0" value={min} onChange={(e) => setMin(e.target.value)} /></span>
+                  </label>
+                  <label className="price-field">To
+                    <span className="price-input">Rs <input type="number" inputMode="numeric" min={0} placeholder={String(maxPrice)} value={max} onChange={(e) => setMax(e.target.value)} /></span>
+                  </label>
                 </div>
-                <div className="filter-group">
-                  <p className="filter-title">Price</p>
-                  {PRICE_RANGES.map((r) => (
-                    <label key={r.id} className="filter-opt">
-                      <input type="checkbox" checked={prices.includes(r.id)} onChange={() => setPrices((p) => toggle(p, r.id))} />
-                      <span>{r.label}</span>
-                    </label>
-                  ))}
-                </div>
-                <div className="filter-group">
-                  <p className="filter-title">Show only</p>
-                  {TAGS.map((t) => (
-                    <label key={t.id} className="filter-opt">
-                      <input type="checkbox" checked={tags.includes(t.id)} onChange={() => setTags((p) => toggle(p, t.id))} />
-                      <span>{t.label}</span>
-                    </label>
-                  ))}
-                </div>
-                <div className="filters-foot">
-                  <button type="button" className="btn btn-solid filters-apply" onClick={() => setDrawer(false)}>View {list.length} {list.length === 1 ? "piece" : "pieces"}</button>
-                  {active > 0 && <button type="button" className="filter-clear" onClick={clear}>Clear all</button>}
-                </div>
-              </aside>
-            </>
+              </div>
+              {active > 0 && <button type="button" className="filter-clear" onClick={clear}>Clear all</button>}
+            </aside>
           )}
 
           <div className="collection-results">
             {list.length === 0 ? (
-              <p className="empty-note">No pieces match these filters. <button type="button" className="filter-clear" onClick={clear}>Clear all</button></p>
+              <p className="empty-note">No products match these filters. <button type="button" className="filter-clear" onClick={clear}>Clear all</button></p>
             ) : (
               <div className="grid-4 product-grid">
                 {list.map((p) => (
                   <article key={p.id} className="product">
                     <div className="product-img">
-                      <Photo src={p.image} alt={p.name} sizes="(max-width: 900px) 45vw, 234px" />
+                      <Photo src={p.image} alt={p.name} sizes="(max-width: 900px) 45vw, 300px" />
                       {p.hoverImage && (
-                        <div className="product-alt"><Photo src={p.hoverImage} alt={`${p.name} alternate view`} sizes="(max-width: 900px) 45vw, 234px" /></div>
+                        <div className="product-alt"><Photo src={p.hoverImage} alt={`${p.name} alternate view`} sizes="(max-width: 900px) 45vw, 300px" /></div>
                       )}
                       {p.badge && <span className="badge">{p.badge}</span>}
-                      <button className="add-btn" onClick={addToBag}>Add to bag</button>
+                      <button className="add-btn" onClick={() => addToBag(p.id)}>Add to bag</button>
                     </div>
                     <h3>{p.name}</h3>
                     <p className="price">{formatPrice(p.price)}</p>

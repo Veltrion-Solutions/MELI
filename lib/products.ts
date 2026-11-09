@@ -25,6 +25,9 @@ export const PRODUCTS: Product[] = [
   { id: "emora-shirt-dress", name: "Emora Shirt Dress", price: 11800, category: "dresses", badge: "Best seller", image: "/images/emora-shirt-dress/front.png", hoverImage: "/images/emora-shirt-dress/side.png" },
 ];
 
+/** Order value (Rs) above which shipping is free — matches the announcement bar. */
+export const FREE_SHIPPING_MIN = 12000;
+
 export const FEATURED_ID = "sierra-midi-dress";
 export const PROMO_IMAGE = "/images/meli-new-collection-promo.png";
 export const STORY_IMAGE = "/images/emora-shirt-dress/front.png";

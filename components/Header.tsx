@@ -2,14 +2,12 @@
 
 import { useState } from "react";
 import { useShop } from "./ShopProvider";
-import type { Category } from "@/lib/products";
+import type { Filter } from "./ShopProvider";
 
-const NAV: { label: string; target: Category | null }[] = [
-  { label: "New", target: null },
+const NAV: { label: string; target: Filter }[] = [
+  { label: "New", target: "new" },
   { label: "Dresses", target: "dresses" },
   { label: "Tops", target: "tops" },
-  { label: "Skirts", target: "skirts" },
-  { label: "Pants", target: "pants" },
 ];
 
 export default function Header() {

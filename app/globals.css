@@ -197,6 +197,17 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
 .story { position: relative; height: 530px; display: grid; place-items: center; text-align: center; color: #fff; overflow: hidden; }
 .story-bg { position: absolute; inset: 0; background: linear-gradient(180deg, #c99a6e 0%, #8f6a4f 55%, #6e5340 100%); }
 .story-bg .photo-placeholder { background: transparent; }
+.story-bg::after { content: ""; position: absolute; inset: 0; background: rgba(58, 40, 34, 0.55); }
+
+/* Product hover image */
+.product-alt { position: absolute; inset: 0; opacity: 0; transition: opacity 0.35s; }
+.product-img:hover .product-alt { opacity: 1; }
+.add-btn, .badge { z-index: 2; }
+
+/* Promo */
+.promo { padding: 48px 0; background: var(--section-alt); }
+.promo .container { display: flex; justify-content: center; }
+.promo-img { position: relative; display: block; width: min(360px, 100%); aspect-ratio: 9 / 16; overflow: hidden; }
 .story-copy { position: relative; max-width: 540px; padding: 0 var(--gutter); }
 .story .eyebrow { color: #f0d9b8; }
 .story h2 { color: #fff; font-size: 46px; line-height: 1.08; margin: 18px 0 22px; }

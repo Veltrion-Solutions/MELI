@@ -1,4 +1,4 @@
-export type Category = "dresses" | "tops" | "skirts" | "pants";
+export type Category = "dresses" | "tops";
 
 export type Product = {
   id: string;
@@ -8,27 +8,26 @@ export type Product = {
   badge?: "New" | "Best seller";
   /** Path under /public, e.g. "/images/marisol-maxi.jpg". Placeholder is shown until set. */
   image?: string;
+  /** Secondary view shown on hover. */
+  hoverImage?: string;
 };
 
 export const CATEGORIES: { id: Category; label: string; image?: string }[] = [
-  { id: "dresses", label: "Dresses" },
-  { id: "tops", label: "Tops" },
-  { id: "skirts", label: "Skirts" },
-  { id: "pants", label: "Pants" },
+  { id: "dresses", label: "Dresses", image: "/images/sierra-midi-dress/front.png" },
+  { id: "tops", label: "Tops", image: "/images/elara-front-tie-top/front.png" },
 ];
 
 export const PRODUCTS: Product[] = [
-  { id: "aurelie-wrap-midi", name: "Aurelie Wrap Midi", price: 9400, category: "dresses", badge: "New" },
-  { id: "vesper-lace-up-shirt", name: "Vesper Lace-Up Shirt", price: 8900, category: "tops", badge: "New" },
-  { id: "mei-tie-neck-top", name: "Mei Tie-Neck Top", price: 6500, category: "tops", badge: "Best seller" },
-  { id: "cerise-gingham-midi", name: "Cerise Gingham Midi", price: 8400, category: "skirts" },
-  { id: "azure-tiered-maxi", name: "Azure Tiered Maxi", price: 9400, category: "dresses", badge: "Best seller" },
-  { id: "sand-tailored-wide-leg", name: "Sand Tailored Wide-Leg", price: 10200, category: "pants" },
-  { id: "marisol-maxi", name: "Marisol Maxi", price: 11800, category: "dresses" },
-  { id: "linden-belted-wide-leg", name: "Linden Belted Wide-Leg", price: 10800, category: "pants" },
+  { id: "sierra-midi-dress", name: "Sierra Midi Dress", price: 9400, category: "dresses", badge: "New", image: "/images/sierra-midi-dress/front.png", hoverImage: "/images/sierra-midi-dress/pose.png" },
+  { id: "elara-front-tie-top", name: "Elara Front Tie Top", price: 8900, category: "tops", badge: "New", image: "/images/elara-front-tie-top/front.png", hoverImage: "/images/elara-front-tie-top/seated.png" },
+  { id: "mia-puff-sleeve-top", name: "Mia Puff Sleeve Top", price: 6500, category: "tops", badge: "Best seller", image: "/images/mia-puff-sleeve-top/front.png", hoverImage: "/images/mia-puff-sleeve-top/side.png" },
+  { id: "emi-ruffle-sleeve-top", name: "Emi Ruffle Sleeve Top", price: 7200, category: "tops", image: "/images/emi-ruffle-sleeve-top/front.png", hoverImage: "/images/emi-ruffle-sleeve-top/side.png" },
+  { id: "emora-shirt-dress", name: "Emora Shirt Dress", price: 11800, category: "dresses", badge: "Best seller", image: "/images/emora-shirt-dress/front.png", hoverImage: "/images/emora-shirt-dress/side.png" },
 ];
 
-export const FEATURED_ID = "marisol-maxi";
+export const FEATURED_ID = "sierra-midi-dress";
+export const PROMO_IMAGE = "/images/meli-new-collection-promo.png";
+export const STORY_IMAGE = "/images/emora-shirt-dress/front.png";
 
 export const REVIEWS = [
   { quote: "The wrap midi fits like it was made for me. I've worn it to two weddings already.", name: "Tharushi", city: "Colombo" },

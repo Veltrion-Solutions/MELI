@@ -23,7 +23,7 @@ export default function Hero() {
         </div>
         <div className="hero-visual">
           <div className="hero-arch">
-            <Photo alt="Model wearing the Marisol Maxi" sizes="(max-width: 900px) 80vw, 355px" priority />
+            <Photo src={featured.image} alt={`Model wearing the ${featured.name}`} sizes="(max-width: 900px) 80vw, 355px" priority />
           </div>
           <div className="featured-card">
             <span className="eyebrow">Featured</span>

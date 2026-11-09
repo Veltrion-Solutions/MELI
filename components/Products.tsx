@@ -6,8 +6,8 @@ import { CATEGORIES, PRODUCTS, formatPrice } from "@/lib/products";
 
 export default function Products() {
   const { filter, showCategory, addToBag } = useShop();
-  const list = filter ? PRODUCTS.filter((p) => p.category === filter) : PRODUCTS;
-  const title = filter ? CATEGORIES.find((c) => c.id === filter)!.label : "New arrivals";
+  const list = !filter ? PRODUCTS : filter === "new" ? PRODUCTS.filter((p) => p.badge === "New") : PRODUCTS.filter((p) => p.category === filter);
+  const title = !filter ? "New arrivals" : filter === "new" ? "New in" : CATEGORIES.find((c) => c.id === filter)!.label;
 
   return (
     <section className="section products" id="shop">
@@ -27,6 +27,9 @@ export default function Products() {
             <article key={p.id} className="product">
               <div className="product-img">
                 <Photo src={p.image} alt={p.name} sizes="(max-width: 900px) 45vw, 234px" />
+                {p.hoverImage && (
+                  <div className="product-alt"><Photo src={p.hoverImage} alt={`${p.name} alternate view`} sizes="(max-width: 900px) 45vw, 234px" /></div>
+                )}
                 {p.badge && <span className="badge">{p.badge}</span>}
                 <button className="add-btn" onClick={addToBag}>Add to bag</button>
               </div>

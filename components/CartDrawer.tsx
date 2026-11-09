@@ -64,7 +64,7 @@ export default function CartDrawer() {
             <ul className="cart-list">
               {cartLines.map(({ product: p, qty }) => (
                 <li key={p.id} className="cart-line">
-                  <div className="cart-thumb"><Photo src={p.image} alt={p.name} sizes="80px" /></div>
+                  <div className="cart-thumb"><Photo src={p.image} alt={p.name} sizes="160px" /></div>
                   <div className="cart-info">
                     <p className="cart-name">{p.name}</p>
                     <p className="cart-price">{formatPrice(p.price)}</p>

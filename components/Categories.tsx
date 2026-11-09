@@ -16,7 +16,7 @@ export default function Categories() {
         <div className="grid-4">
           {CATEGORIES.map((c) => (
             <button key={c.id} className="cat-card" onClick={() => showCategory(c.id)}>
-              <div className="cat-img"><Photo src={c.image} alt={c.label} sizes="(max-width: 900px) 45vw, 234px" /></div>
+              <div className="cat-img"><Photo src={c.image} alt={c.label} sizes="(max-width: 1380px) 50vw, 690px" /></div>
               <span className="cat-label">{c.label}</span>
             </button>
           ))}

@@ -134,9 +134,9 @@ export default function Collection({ name }: { name: CollectionKey }) {
                 {list.map((p) => (
                   <article key={p.id} className="product">
                     <div className="product-img">
-                      <Photo src={p.image} alt={p.name} sizes="(max-width: 900px) 45vw, 300px" />
+                      <Photo src={p.image} alt={p.name} sizes="(max-width: 600px) 50vw, (max-width: 1100px) 34vw, 340px" />
                       {p.hoverImage && (
-                        <div className="product-alt"><Photo src={p.hoverImage} alt={`${p.name} alternate view`} sizes="(max-width: 900px) 45vw, 300px" /></div>
+                        <div className="product-alt"><Photo src={p.hoverImage} alt={`${p.name} alternate view`} sizes="(max-width: 600px) 50vw, (max-width: 1100px) 34vw, 340px" /></div>
                       )}
                       {p.badge && <span className="badge">{p.badge}</span>}
                       <button className="add-btn" onClick={() => addToBag(p.id)}>Add to bag</button>

@@ -40,7 +40,7 @@ export default function HeroSlides() {
       <div className="hero-arch">
         {SLIDES.map((p, idx) => (
           <div key={p.id} className={`hero-slide${idx === i ? " active" : ""}`} aria-hidden={idx !== i}>
-            <Photo src={p.image} alt={`Model wearing the ${p.name}`} sizes="(max-width: 900px) 80vw, 460px" priority={idx === START} />
+            <Photo src={p.image} alt={`Model wearing the ${p.name}`} sizes="(max-width: 900px) 90vw, 460px" priority={idx === START} />
           </div>
         ))}
       </div>

@@ -5,7 +5,7 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { supabaseReady } from "@/lib/supabase/config";
-import { pathAfterLogin } from "@/lib/admin";
+import { pathAfterLogin, safePath } from "@/lib/admin";
 import { passwordProblem } from "@/lib/password";
 
 export type AuthState = { error?: string; message?: string; email?: string; name?: string } | undefined;
@@ -49,6 +49,9 @@ export async function signup(_: AuthState, form: FormData): Promise<AuthState> {
   const password = String(form.get("password") ?? "");
   const confirm = String(form.get("confirm") ?? "");
   const back = { email, name };
+  // Return to the page they came from (e.g. the dress they were adding), not /admin.
+  const nextRaw = safePath(str(form, "next"));
+  const next = nextRaw.startsWith("/admin") ? "/account" : nextRaw;
 
   if (!name || name.length > 80) return { error: "Please enter your name.", ...back };
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return { error: "Please enter a valid email address.", ...back };
@@ -61,7 +64,7 @@ export async function signup(_: AuthState, form: FormData): Promise<AuthState> {
   const { data, error } = await supabase.auth.signUp({
     email,
     password,
-    options: { data: { full_name: name }, emailRedirectTo: `${await siteUrl()}/auth/confirm?next=/account` },
+    options: { data: { full_name: name }, emailRedirectTo: `${await siteUrl()}/auth/confirm?next=${encodeURIComponent(next)}` },
   });
   if (error) {
     console.warn(`[signup] Failed for ${email}: ${error.code ?? "unknown"} ${error.message}`);
@@ -76,7 +79,7 @@ export async function signup(_: AuthState, form: FormData): Promise<AuthState> {
   // With email confirmation turned off in Supabase, signUp signs the customer in straight away.
   if (data.session) {
     revalidatePath("/", "layout");
-    redirect("/account");
+    redirect(next);
   }
   return { message: `We've sent a confirmation link to ${email}. Open it to activate your account.`, email };
 }

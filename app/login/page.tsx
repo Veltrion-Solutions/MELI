@@ -9,10 +9,10 @@ import { pathAfterLogin } from "@/lib/admin";
 
 export const metadata = { title: "Sign in - MELI" };
 
-type Props = { searchParams: Promise<{ mode?: string; next?: string; error?: string }> };
+type Props = { searchParams: Promise<{ mode?: string; next?: string; error?: string; reason?: string }> };
 
 export default async function Page({ searchParams }: Props) {
-  const { mode, next, error } = await searchParams;
+  const { mode, next, error, reason } = await searchParams;
   if (supabaseReady) {
     const supabase = await createClient();
     const { data } = await supabase.auth.getClaims();
@@ -27,6 +27,7 @@ export default async function Page({ searchParams }: Props) {
           initialMode={mode === "signup" ? "signup" : "login"}
           next={next ?? "/account"}
           linkError={error === "link"}
+          notice={reason === "bag" ? "Please sign in or create an account to add items to your bag. We'll bring you right back." : undefined}
           ready={supabaseReady}
         />
       </main>

@@ -1,7 +1,10 @@
 "use client";
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 import { SIZES, type Category, type Product, type Size } from "@/lib/products";
+import { createClient } from "@/lib/supabase/client";
+import { supabaseReady } from "@/lib/supabase/config";
 
 type Filter = Category | null;
 export type CartLine = { key: string; product: Product; size: Size; colour: string; qty: number };
@@ -16,8 +19,8 @@ type Shop = {
   cartOpen: boolean;
   openCart: () => void;
   closeCart: () => void;
-  /** Adds one of the product in the chosen size/colour and opens the cart drawer. */
-  addToBag: (id: string, size: Size, colour: string) => void;
+  /** Adds one in the chosen size/colour and opens the bag; sends signed-out shoppers to /login first. */
+  addToBag: (id: string, size: Size, colour: string) => Promise<void>;
   /** Line actions take the cart line key. */
   setQty: (key: string, qty: number) => void;
   removeFromBag: (key: string) => void;
@@ -41,6 +44,22 @@ type Stored = Record<string, number>;
 
 const lineKey = (id: string, size: Size, colour: string) => [id, size, colour].join(SEP);
 
+/** An "Add to bag" made while signed out, finished after signing in. */
+type PendingAdd = { id: string; size: Size; colour: string; at: number };
+const PENDING_KEY = "meli-pending-add";
+const PENDING_TTL = 60 * 60 * 1000; // 1 hour, enough to confirm a new account by email
+
+/** Reads the local session cookie; no network call unless the token needs refreshing. */
+async function isSignedIn() {
+  if (!supabaseReady) return true; // accounts not connected yet: don't block the shop
+  try {
+    const { data } = await createClient().auth.getSession();
+    return Boolean(data.session);
+  } catch {
+    return false;
+  }
+}
+
 function parseKey(key: string, products: Product[]) {
   const [id, size, colour] = key.split(SEP);
   const product = products.find((p) => p.id === id);
@@ -54,6 +73,7 @@ export function ShopProvider({ products, children }: { products: Product[]; chil
   const [cartOpen, setCartOpen] = useState(false);
   const [viewingId, setViewingId] = useState<string | null>(null);
   const [filter, setFilter] = useState<Filter>(null);
+  const router = useRouter();
 
   // Restore the bag after mount (keeps server and first client render identical).
   useEffect(() => {
@@ -82,11 +102,41 @@ export function ShopProvider({ products, children }: { products: Product[]; chil
     }
   }, [items, loaded]);
 
-  const addToBag = useCallback((id: string, size: Size, colour: string) => {
+  const putInBag = useCallback((id: string, size: Size, colour: string) => {
     const key = lineKey(id, size, colour);
     setItems((prev) => ({ ...prev, [key]: Math.min(MAX_QTY, (prev[key] ?? 0) + 1) }));
     setCartOpen(true);
   }, []);
+
+  // Shoppers must be signed in to use the bag. Signed-out shoppers are sent to /login;
+  // their pick is remembered and added once they come back signed in.
+  const addToBag = useCallback(async (id: string, size: Size, colour: string) => {
+    if (await isSignedIn()) { putInBag(id, size, colour); return; }
+    try {
+      window.localStorage.setItem(PENDING_KEY, JSON.stringify({ id, size, colour, at: Date.now() } satisfies PendingAdd));
+    } catch { /* storage blocked: they'll just pick again after signing in */ }
+    const here = window.location.pathname + window.location.search;
+    router.push(`/login?next=${encodeURIComponent(here)}&reason=bag`);
+  }, [putInBag, router]);
+
+  // Back from signing in (or confirming a new account): finish the pending add.
+  useEffect(() => {
+    if (!loaded) return;
+    let raw: string | null = null;
+    try { raw = window.localStorage.getItem(PENDING_KEY); } catch { return; }
+    if (!raw) return;
+    let cancelled = false;
+    isSignedIn().then((ok) => {
+      if (cancelled || !ok) return;
+      try { window.localStorage.removeItem(PENDING_KEY); } catch { /* ignore */ }
+      try {
+        const p = JSON.parse(raw!) as PendingAdd;
+        if (Date.now() - p.at > PENDING_TTL) return;
+        if (parseKey(lineKey(p.id, p.size, p.colour), products)) putInBag(p.id, p.size, p.colour);
+      } catch { /* corrupt: drop it */ }
+    });
+    return () => { cancelled = true; };
+  }, [loaded, products, putInBag]);
   const setQty = useCallback((key: string, qty: number) => {
     setItems((prev) => {
       const next = { ...prev };

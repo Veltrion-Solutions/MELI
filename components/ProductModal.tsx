@@ -58,7 +58,7 @@ function Details({ product: p }: { product: Product }) {
   const add = () => {
     if (!size) { setNeedSize(true); return; }
     closeProduct();
-    addToBag(p.id, size, colour);
+    void addToBag(p.id, size, colour);
   };
 
   return (

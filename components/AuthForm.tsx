@@ -12,15 +12,15 @@ const COPY: Record<Mode, { title: string; lead: string; submit: string; busy: st
   forgot: { title: "Reset password", lead: "Enter your email and we'll send you a link to set a new password.", submit: "Send reset link", busy: "Sending…" },
 };
 
-type Props = { initialMode: "login" | "signup"; next: string; linkError: boolean; ready: boolean };
+type Props = { initialMode: "login" | "signup"; next: string; linkError: boolean; ready: boolean; notice?: string };
 
-export default function AuthForm({ initialMode, next, linkError, ready }: Props) {
+export default function AuthForm({ initialMode, next, linkError, ready, notice }: Props) {
   const [mode, setMode] = useState<Mode>(initialMode);
   // Remount the form per mode so each keeps its own result message.
-  return <ModeForm key={mode} mode={mode} setMode={setMode} next={next} linkError={linkError} ready={ready} />;
+  return <ModeForm key={mode} mode={mode} setMode={setMode} next={next} linkError={linkError} ready={ready} notice={notice} />;
 }
 
-function ModeForm({ mode, setMode, next, linkError, ready }: { mode: Mode; setMode: (m: Mode) => void; next: string; linkError: boolean; ready: boolean }) {
+function ModeForm({ mode, setMode, next, linkError, ready, notice }: { mode: Mode; setMode: (m: Mode) => void; next: string; linkError: boolean; ready: boolean; notice?: string }) {
   const action = mode === "login" ? login : mode === "signup" ? signup : forgotPassword;
   const [state, formAction, pending] = useActionState<AuthState, FormData>(action, undefined);
   const [showPw, setShowPw] = useState(false);
@@ -41,6 +41,7 @@ function ModeForm({ mode, setMode, next, linkError, ready }: { mode: Mode; setMo
       <h1 className="auth-title">{c.title}</h1>
       <p className="auth-lead">{c.lead}</p>
 
+      {notice && !state && mode !== "forgot" && <p className="auth-notice" role="status">{notice}</p>}
       {!ready && <p className="auth-alert" role="status">Customer accounts aren&rsquo;t connected yet. Add the Supabase keys to <code>.env.local</code> to turn them on.</p>}
       {linkError && mode === "login" && !state && <p className="auth-alert" role="alert">That link has expired or was already used. Please sign in, or request a new link.</p>}
       {state?.error && <p className="auth-alert" role="alert">{state.error}</p>}

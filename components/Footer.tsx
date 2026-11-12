@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 const COLS = [
   { title: "Shop", links: ["Dresses", "Tops", "Skirts", "Pants"] },
   { title: "Help", links: ["Shipping", "Returns", "Size guide", "Contact"] },
@@ -15,7 +17,7 @@ export default function Footer() {
         {COLS.map((c) => (
           <div key={c.title}>
             <p className="eyebrow">{c.title}</p>
-            <ul>{c.links.map((l) => <li key={l}><a href="#">{l}</a></li>)}</ul>
+            <ul>{c.links.map((l) => <li key={l}>{l === "Size guide" ? <Link href="/size-guide">{l}</Link> : <a href="#">{l}</a>}</li>)}</ul>
           </div>
         ))}
       </div>

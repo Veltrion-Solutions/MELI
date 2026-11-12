@@ -6,8 +6,9 @@ import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { supabaseReady } from "@/lib/supabase/config";
 import { pathAfterLogin } from "@/lib/admin";
+import { passwordProblem } from "@/lib/password";
 
-export type AuthState = { error?: string; message?: string; email?: string } | undefined;
+export type AuthState = { error?: string; message?: string; email?: string; name?: string } | undefined;
 
 const str = (f: FormData, k: string) => String(f.get(k) ?? "").trim();
 
@@ -46,7 +47,15 @@ export async function signup(_: AuthState, form: FormData): Promise<AuthState> {
   const name = str(form, "name");
   const email = str(form, "email");
   const password = String(form.get("password") ?? "");
-  if (password.length < 8) return { error: "Use at least 8 characters for your password.", email };
+  const confirm = String(form.get("confirm") ?? "");
+  const back = { email, name };
+
+  if (!name || name.length > 80) return { error: "Please enter your name.", ...back };
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return { error: "Please enter a valid email address.", ...back };
+  // Same rules as the live checklist; checked again here so they can't be skipped.
+  const problem = passwordProblem(password, email);
+  if (problem) return { error: problem, ...back };
+  if (password !== confirm) return { error: "The two passwords don't match.", ...back };
 
   const supabase = await createClient();
   const { data, error } = await supabase.auth.signUp({
@@ -54,7 +63,15 @@ export async function signup(_: AuthState, form: FormData): Promise<AuthState> {
     password,
     options: { data: { full_name: name }, emailRedirectTo: `${await siteUrl()}/auth/confirm?next=/account` },
   });
-  if (error) return { error: error.code === "weak_password" ? "Please choose a stronger password." : error.message, email };
+  if (error) {
+    console.warn(`[signup] Failed for ${email}: ${error.code ?? "unknown"} ${error.message}`);
+    const msg =
+      error.code === "weak_password" ? "Supabase rejected that password as too weak. Please choose a stronger one."
+      : error.code === "user_already_exists" || error.code === "email_exists" ? "There's already an account with that email. Try signing in instead."
+      : error.code === "over_email_send_rate_limit" ? "Too many sign-up emails were sent just now. Please try again in a few minutes."
+      : "We couldn't create your account. Please try again.";
+    return { error: msg, ...back };
+  }
 
   // With email confirmation turned off in Supabase, signUp signs the customer in straight away.
   if (data.session) {

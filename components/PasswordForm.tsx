@@ -1,19 +1,20 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useState } from "react";
 import { updatePassword, type PwState } from "@/app/account/password/actions";
+import NewPasswordFields from "./NewPasswordFields";
 
-export default function PasswordForm() {
+export default function PasswordForm({ email }: { email?: string }) {
   const [state, action, pending] = useActionState<PwState, FormData>(updatePassword, undefined);
+  const [valid, setValid] = useState(false);
   return (
     <div className="auth-card">
       <h1 className="auth-title">Set a new password</h1>
-      <p className="auth-lead">Choose a password with at least 8 characters.</p>
+      <p className="auth-lead">Choose a strong password you don&rsquo;t use anywhere else.</p>
       {state?.error && <p className="auth-alert" role="alert">{state.error}</p>}
       <form action={action} className="auth-form">
-        <label className="auth-field"><span>New password</span><input name="password" type="password" autoComplete="new-password" minLength={8} required /></label>
-        <label className="auth-field"><span>Confirm password</span><input name="confirm" type="password" autoComplete="new-password" minLength={8} required /></label>
-        <button type="submit" className="btn btn-solid auth-submit" disabled={pending}>{pending ? "Saving…" : "Save password"}</button>
+        <NewPasswordFields email={email} label="New password" onValidChange={setValid} />
+        <button type="submit" className="btn btn-solid auth-submit" disabled={pending || !valid}>{pending ? "Saving…" : "Save password"}</button>
       </form>
     </div>
   );

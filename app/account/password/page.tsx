@@ -17,7 +17,7 @@ export default async function Page() {
   return (
     <Shop>
       <Header />
-      <main className="auth"><PasswordForm /></main>
+      <main className="auth"><PasswordForm email={user.email} /></main>
       <Footer />
     </Shop>
   );

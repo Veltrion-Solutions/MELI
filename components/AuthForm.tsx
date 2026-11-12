@@ -2,6 +2,7 @@
 
 import { useActionState, useState } from "react";
 import { forgotPassword, login, signup, type AuthState } from "@/app/login/actions";
+import NewPasswordFields from "./NewPasswordFields";
 
 type Mode = "login" | "signup" | "forgot";
 
@@ -23,6 +24,8 @@ function ModeForm({ mode, setMode, next, linkError, ready }: { mode: Mode; setMo
   const action = mode === "login" ? login : mode === "signup" ? signup : forgotPassword;
   const [state, formAction, pending] = useActionState<AuthState, FormData>(action, undefined);
   const [showPw, setShowPw] = useState(false);
+  const [email, setEmail] = useState(state?.email ?? "");
+  const [pwValid, setPwValid] = useState(false);
   const c = COPY[mode];
   const sent = Boolean(state?.message);
 
@@ -54,33 +57,27 @@ function ModeForm({ mode, setMode, next, linkError, ready }: { mode: Mode; setMo
           {mode === "signup" && (
             <label className="auth-field">
               <span>Full name</span>
-              <input name="name" type="text" autoComplete="name" required maxLength={80} />
+              <input name="name" type="text" autoComplete="name" required maxLength={80} defaultValue={state?.name} />
             </label>
           )}
           <label className="auth-field">
             <span>Email</span>
-            <input name="email" type="email" autoComplete="email" required defaultValue={state?.email} />
+            <input name="email" type="email" autoComplete="email" required defaultValue={state?.email} onChange={(e) => setEmail(e.target.value)} />
           </label>
-          {mode !== "forgot" && (
+          {mode === "signup" && <NewPasswordFields email={email} onValidChange={setPwValid} />}
+          {mode === "login" && (
             <label className="auth-field">
               <span className="auth-field-row">
                 Password
-                {mode === "login" && <button type="button" className="auth-link" onClick={() => setMode("forgot")}>Forgot password?</button>}
+                <button type="button" className="auth-link" onClick={() => setMode("forgot")}>Forgot password?</button>
               </span>
               <span className="auth-pw">
-                <input
-                  name="password"
-                  type={showPw ? "text" : "password"}
-                  autoComplete={mode === "signup" ? "new-password" : "current-password"}
-                  required
-                  minLength={mode === "signup" ? 8 : undefined}
-                />
+                <input name="password" type={showPw ? "text" : "password"} autoComplete="current-password" required />
                 <button type="button" className="auth-show" aria-pressed={showPw} onClick={() => setShowPw((s) => !s)}>{showPw ? "Hide" : "Show"}</button>
               </span>
-              {mode === "signup" && <small>At least 8 characters.</small>}
             </label>
           )}
-          <button type="submit" className="btn btn-solid auth-submit" disabled={pending || !ready}>{pending ? c.busy : c.submit}</button>
+          <button type="submit" className="btn btn-solid auth-submit" disabled={pending || !ready || (mode === "signup" && !pwValid)}>{pending ? c.busy : c.submit}</button>
           {mode === "forgot" && <button type="button" className="auth-link auth-back" onClick={() => setMode("login")}>Back to sign in</button>}
         </form>
       )}

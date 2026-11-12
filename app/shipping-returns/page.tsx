@@ -57,7 +57,7 @@ export default function Page() {
                 below that, a flat fee applies by area.
               </p>
               <div className="size-table-wrap">
-                <table className="size-table">
+                <table className="size-table ship-table">
                   <caption className="sr-only">Delivery times and fees by area</caption>
                   <thead>
                     <tr><th scope="col">Area</th><th scope="col">Delivery time</th><th scope="col">Fee</th><th scope="col">Over {formatPrice(FREE_SHIPPING_MIN)}</th></tr>

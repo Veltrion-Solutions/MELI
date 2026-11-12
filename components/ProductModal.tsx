@@ -56,16 +56,22 @@ function Details({ product: p }: { product: Product }) {
   const gallery = p.gallery.length ? p.gallery : p.image ? [p.image] : [];
 
   const add = () => {
-    if (!size) { setNeedSize(true); return; }
+    if (!size) {
+      setNeedSize(true);
+      // On phones the size buttons may be scrolled out of view behind the pinned bar.
+      document.querySelector(".pd-sizes")?.scrollIntoView({ behavior: "smooth", block: "center" });
+      return;
+    }
     closeProduct();
     void addToBag(p.id, size, colour);
   };
 
   return (
+    <>
     <div className="pd-grid">
       <div className="pd-media">
         <div className="pd-main">
-          <Photo src={gallery[shot]} alt={`${p.name}, view ${shot + 1} of ${gallery.length}`} sizes="(max-width: 800px) 100vw, 480px" />
+          <Photo src={gallery[shot]} alt={`${p.name}, view ${shot + 1} of ${gallery.length}`} sizes="(max-width: 640px) 100vw, 480px" />
           {p.badge && <span className="badge">{p.badge}</span>}
         </div>
         {gallery.length > 1 && (
@@ -157,5 +163,17 @@ function Details({ product: p }: { product: Product }) {
         </details>
       </div>
     </div>
+
+    {/* Phones: price and Add to bag stay pinned to the bottom while scrolling the sheet. */}
+    <div className="pd-buybar">
+      <div className="pd-buybar-info">
+        <span className="pd-buybar-price">{formatPrice(p.price)}</span>
+        <span className={needSize ? "pd-buybar-hint is-error" : "pd-buybar-hint"}>
+          {size ? `${colour} · Size ${size}` : needSize ? "Choose a size above" : "Choose a size"}
+        </span>
+      </div>
+      <button type="button" className="btn btn-solid" onClick={add}>Add to bag</button>
+    </div>
+    </>
   );
 }

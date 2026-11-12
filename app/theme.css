@@ -440,3 +440,21 @@ img { max-width: 100%; }
 .auth-notice { margin-top: 20px; padding: 12px 14px; border-radius: 8px; background: #f3f3f3; color: #181818; font-size: 13px; line-height: 1.5; }
 .auth-pw-group { display: grid; gap: 10px; }
 .auth-forgot { justify-self: end; }
+
+/* ---------- Responsive polish (phones & tablets) ---------- */
+@media (max-width: 600px) {
+  /* Size chart: fit five columns on a phone without sideways scrolling. */
+  .size-table { min-width: 0; font-size: 13px; }
+  .size-table th, .size-table td { padding: 11px 8px; }
+  .size-table th:first-child, .size-table td:first-child { padding-left: 12px; }
+  .size-table thead th { font-size: 10.5px; letter-spacing: 0.04em; }
+  /* Shipping: the "Over Rs 12,000 → Free" column is already stated above the table. */
+  .ship-table th:nth-child(4), .ship-table td:nth-child(4) { display: none; }
+  .ship-table th, .ship-table td { white-space: normal; }
+  .ship-table td:nth-child(3) { white-space: nowrap; }
+  .policy-jump a { flex: 1; text-align: center; padding: 0 10px; }
+}
+@media (max-width: 700px) {
+  /* 16px text in form fields stops iPhones zooming in when a field is tapped. */
+  input:not([type="checkbox"]):not([type="radio"]), select, textarea { font-size: 16px !important; }
+}

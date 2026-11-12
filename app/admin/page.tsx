@@ -53,11 +53,11 @@ export default async function Page() {
                       </div>
                     </div>
                   </th>
-                  <td className="admin-cap">{r.category}</td>
-                  <td>{r.in_stock.length ? r.in_stock.join(", ") : <span className="admin-warn">Sold out</span>}</td>
-                  <td>{r.active ? <span className="admin-pill on">Visible</span> : <span className="admin-pill">Hidden</span>}</td>
-                  <td><PriceCell id={r.id} price={r.price} name={r.name} /></td>
-                  <td><Link href={`/admin/products/${r.id}`} className="admin-text-btn">Edit</Link></td>
+                  <td className="admin-cap" data-label="Category">{r.category}</td>
+                  <td data-label="Sizes">{r.in_stock.length ? r.in_stock.join(", ") : <span className="admin-warn">Sold out</span>}</td>
+                  <td data-label="Status">{r.active ? <span className="admin-pill on">Visible</span> : <span className="admin-pill">Hidden</span>}</td>
+                  <td data-label="Price (Rs)"><PriceCell id={r.id} price={r.price} name={r.name} /></td>
+                  <td className="admin-edit-cell"><Link href={`/admin/products/${r.id}`} className="admin-text-btn">Edit</Link></td>
                 </tr>
               ))}
             </tbody>

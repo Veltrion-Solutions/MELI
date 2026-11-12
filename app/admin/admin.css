@@ -95,3 +95,26 @@
 .admin-photo-add { position: relative; display: grid; place-items: center; aspect-ratio: 3 / 4; border: 1.5px dashed #c8c8c8; border-radius: 8px; font-size: 13px; color: #6b6b6b; cursor: pointer; transition: border-color 0.2s ease, color 0.2s ease; }
 .admin-photo-add:hover, .admin-photo-add:focus-within { border-color: #181818; color: #181818; }
 .admin-photo-add input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+
+/* ---------- Admin on phones: product rows become cards ---------- */
+@media (max-width: 720px) {
+  .admin-main { padding-top: 22px; }
+  .admin-head { flex-wrap: wrap; gap: 14px; align-items: flex-start; }
+  .admin-head .admin-add { width: 100%; text-align: center; }
+  .admin-bar { padding: 12px 16px; }
+  .admin-nav { gap: 14px; }
+  .admin-table-wrap { background: transparent; border: 0; overflow: visible; }
+  .admin-table { min-width: 0; }
+  .admin-table thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+  .admin-table, .admin-table tbody, .admin-table tr, .admin-table th, .admin-table td { display: block; }
+  .admin-table tr { background: #fff; border: 1px solid #e6e6e6; border-radius: var(--radius); padding: 14px 16px; margin-bottom: 12px; }
+  .admin-table th, .admin-table td { padding: 6px 0; border: 0; }
+  .admin-table tbody th { padding-bottom: 10px; margin-bottom: 4px; border-bottom: 1px solid #efefef; }
+  .admin-table td[data-label] { display: grid; grid-template-columns: 96px 1fr; align-items: center; gap: 10px; }
+  .admin-table td[data-label]::before { content: attr(data-label); font-size: 11.5px; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase; color: #6b6b6b; }
+  .admin-edit-cell { padding-top: 10px !important; }
+  .admin-edit-cell .admin-text-btn { display: block; text-align: center; padding: 10px; border: 1px solid #181818; border-radius: 8px; text-decoration: none; }
+  .price-cell { grid-template-columns: 1fr auto; }
+  .admin-panel { padding: 18px 16px; }
+  .admin-photos { grid-template-columns: repeat(auto-fill, minmax(104px, 1fr)); }
+}

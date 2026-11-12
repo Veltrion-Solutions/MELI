@@ -6,6 +6,15 @@ const COLS = [
   { title: "Follow", links: ["Instagram", "Facebook", "TikTok"] },
 ];
 
+/** Footer links that have a real page; the rest are still placeholders. */
+const PAGES: Record<string, string> = {
+  Dresses: "/dresses",
+  Tops: "/tops",
+  Shipping: "/shipping-returns#shipping",
+  Returns: "/shipping-returns#returns",
+  "Size guide": "/size-guide",
+};
+
 export default function Footer() {
   return (
     <footer className="footer">
@@ -17,7 +26,7 @@ export default function Footer() {
         {COLS.map((c) => (
           <div key={c.title}>
             <p className="eyebrow">{c.title}</p>
-            <ul>{c.links.map((l) => <li key={l}>{l === "Size guide" ? <Link href="/size-guide">{l}</Link> : <a href="#">{l}</a>}</li>)}</ul>
+            <ul>{c.links.map((l) => <li key={l}>{PAGES[l] ? <Link href={PAGES[l]}>{l}</Link> : <a href="#">{l}</a>}</li>)}</ul>
           </div>
         ))}
       </div>

@@ -438,3 +438,5 @@ img { max-width: 100%; }
 .auth-field small.pw-good { color: #1d6b34; }
 .auth-field input[aria-invalid] { border-color: #b3261e; }
 .auth-notice { margin-top: 20px; padding: 12px 14px; border-radius: 8px; background: #f3f3f3; color: #181818; font-size: 13px; line-height: 1.5; }
+.auth-pw-group { display: grid; gap: 10px; }
+.auth-forgot { justify-self: end; }

@@ -67,16 +67,16 @@ function ModeForm({ mode, setMode, next, linkError, ready, notice }: { mode: Mod
           </label>
           {mode === "signup" && <NewPasswordFields email={email} onValidChange={setPwValid} />}
           {mode === "login" && (
-            <label className="auth-field">
-              <span className="auth-field-row">
-                Password
-                <button type="button" className="auth-link" onClick={() => setMode("forgot")}>Forgot password?</button>
-              </span>
-              <span className="auth-pw">
-                <input name="password" type={showPw ? "text" : "password"} autoComplete="current-password" required />
-                <button type="button" className="auth-show" aria-pressed={showPw} onClick={() => setShowPw((s) => !s)}>{showPw ? "Hide" : "Show"}</button>
-              </span>
-            </label>
+            <div className="auth-pw-group">
+              <label className="auth-field">
+                <span>Password</span>
+                <span className="auth-pw">
+                  <input name="password" type={showPw ? "text" : "password"} autoComplete="current-password" required />
+                  <button type="button" className="auth-show" aria-pressed={showPw} onClick={() => setShowPw((s) => !s)}>{showPw ? "Hide" : "Show"}</button>
+                </span>
+              </label>
+              <button type="button" className="auth-link auth-forgot" onClick={() => setMode("forgot")}>Forgot password?</button>
+            </div>
           )}
           <button type="submit" className="btn btn-solid auth-submit" disabled={pending || !ready || (mode === "signup" && !pwValid)}>{pending ? c.busy : c.submit}</button>
           {mode === "forgot" && <button type="button" className="auth-link auth-back" onClick={() => setMode("login")}>Back to sign in</button>}

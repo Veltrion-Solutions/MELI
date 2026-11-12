@@ -3,11 +3,11 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import Photo from "./Photo";
 import { useShop } from "./ShopProvider";
-import { CATEGORIES, PRODUCTS, formatPrice } from "@/lib/products";
+import { CATEGORIES, formatPrice } from "@/lib/products";
 
 export default function Products() {
-  const { filter, showCategory, openProduct } = useShop();
-  const list = filter ? PRODUCTS.filter((p) => p.category === filter) : PRODUCTS;
+  const { products, filter, showCategory, openProduct } = useShop();
+  const list = filter ? products.filter((p) => p.category === filter) : products;
   const title = filter ? CATEGORIES.find((c) => c.id === filter)!.label : "New arrivals";
 
   const track = useRef<HTMLDivElement>(null);

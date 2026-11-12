@@ -1,16 +1,16 @@
-import { ShopProvider } from "./ShopProvider";
+import Shop from "./Shop";
 import Header from "./Header";
 import Footer from "./Footer";
 import Collection, { type CollectionKey } from "./Collection";
 
 export default function CollectionPage({ name }: { name: CollectionKey }) {
   return (
-    <ShopProvider>
+    <Shop>
       <Header />
       <main>
         <Collection name={name} />
       </main>
       <Footer />
-    </ShopProvider>
+    </Shop>
   );
 }

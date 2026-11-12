@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { supabaseReady } from "@/lib/supabase/config";
+import { pathAfterLogin } from "@/lib/admin";
 
 export type AuthState = { error?: string; message?: string; email?: string } | undefined;
 
@@ -18,9 +19,6 @@ async function siteUrl() {
   const proto = h.get("x-forwarded-proto") ?? "http";
   return `${proto}://${host}`;
 }
-
-/** Only allow redirects back into this site. */
-const safeNext = (n: string) => (n.startsWith("/") && !n.startsWith("//") ? n : "/account");
 
 const NOT_READY: AuthState = { error: "Customer accounts aren't connected yet. Add the Supabase keys to .env.local." };
 
@@ -36,8 +34,9 @@ export async function login(_: AuthState, form: FormData): Promise<AuthState> {
       : "That email and password don't match. Please try again.";
     return { error: msg, email };
   }
+  const to = await pathAfterLogin(supabase, str(form, "next"));
   revalidatePath("/", "layout");
-  redirect(safeNext(str(form, "next")));
+  redirect(to);
 }
 
 export async function signup(_: AuthState, form: FormData): Promise<AuthState> {

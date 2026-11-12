@@ -7,5 +7,5 @@ export async function proxy(request: NextRequest) {
 
 export const config = {
   // Only pages that read the customer session.
-  matcher: ["/account/:path*", "/login", "/auth/:path*"],
+  matcher: ["/account/:path*", "/login", "/auth/:path*", "/admin/:path*"],
 };

@@ -1,4 +1,4 @@
-import { ShopProvider } from "@/components/ShopProvider";
+import Shop from "@/components/Shop";
 import Header from "@/components/Header";
 import SizeGuide from "@/components/SizeGuide";
 import Footer from "@/components/Footer";
@@ -7,12 +7,12 @@ export const metadata = { title: "Size guide - MELI" };
 
 export default function Page() {
   return (
-    <ShopProvider>
+    <Shop>
       <Header />
       <main>
         <SizeGuide />
       </main>
       <Footer />
-    </ShopProvider>
+    </Shop>
   );
 }

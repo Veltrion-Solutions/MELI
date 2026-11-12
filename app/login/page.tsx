@@ -1,10 +1,11 @@
 import { redirect } from "next/navigation";
-import { ShopProvider } from "@/components/ShopProvider";
+import Shop from "@/components/Shop";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import AuthForm from "@/components/AuthForm";
 import { createClient } from "@/lib/supabase/server";
 import { supabaseReady } from "@/lib/supabase/config";
+import { pathAfterLogin } from "@/lib/admin";
 
 export const metadata = { title: "Sign in - MELI" };
 
@@ -15,10 +16,11 @@ export default async function Page({ searchParams }: Props) {
   if (supabaseReady) {
     const supabase = await createClient();
     const { data } = await supabase.auth.getClaims();
-    if (data?.claims) redirect("/account");
+    // Already signed in: go where they were headed (admins to /admin).
+    if (data?.claims) redirect(await pathAfterLogin(supabase, next));
   }
   return (
-    <ShopProvider>
+    <Shop>
       <Header />
       <main className="auth">
         <AuthForm
@@ -29,6 +31,6 @@ export default async function Page({ searchParams }: Props) {
         />
       </main>
       <Footer />
-    </ShopProvider>
+    </Shop>
   );
 }

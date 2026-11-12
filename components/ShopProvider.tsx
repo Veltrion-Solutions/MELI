@@ -1,12 +1,14 @@
 "use client";
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
-import { PRODUCTS, SIZES, type Category, type Product, type Size } from "@/lib/products";
+import { SIZES, type Category, type Product, type Size } from "@/lib/products";
 
 type Filter = Category | null;
 export type CartLine = { key: string; product: Product; size: Size; colour: string; qty: number };
 
 type Shop = {
+  /** Live catalogue (from Supabase, or the built-in list). */
+  products: Product[];
   /** Total number of items in the bag. */
   cartCount: number;
   cartLines: CartLine[];
@@ -39,14 +41,14 @@ type Stored = Record<string, number>;
 
 const lineKey = (id: string, size: Size, colour: string) => [id, size, colour].join(SEP);
 
-function parseKey(key: string) {
+function parseKey(key: string, products: Product[]) {
   const [id, size, colour] = key.split(SEP);
-  const product = PRODUCTS.find((p) => p.id === id);
+  const product = products.find((p) => p.id === id);
   if (!product || !(SIZES as readonly string[]).includes(size) || !product.colours.some((c) => c.name === colour)) return null;
   return { product, size: size as Size, colour };
 }
 
-export function ShopProvider({ children }: { children: React.ReactNode }) {
+export function ShopProvider({ products, children }: { products: Product[]; children: React.ReactNode }) {
   const [items, setItems] = useState<Stored>({});
   const [loaded, setLoaded] = useState(false);
   const [cartOpen, setCartOpen] = useState(false);
@@ -61,7 +63,7 @@ export function ShopProvider({ children }: { children: React.ReactNode }) {
         const parsed = JSON.parse(raw) as Stored;
         const clean: Stored = {};
         for (const [key, qty] of Object.entries(parsed)) {
-          if (parseKey(key) && Number.isFinite(qty) && qty > 0) clean[key] = Math.min(MAX_QTY, Math.floor(qty));
+          if (parseKey(key, products) && Number.isFinite(qty) && qty > 0) clean[key] = Math.min(MAX_QTY, Math.floor(qty));
         }
         setItems(clean);
       }
@@ -111,18 +113,18 @@ export function ShopProvider({ children }: { children: React.ReactNode }) {
 
   const cartLines = useMemo<CartLine[]>(
     () => Object.entries(items).flatMap(([key, qty]) => {
-      const line = parseKey(key);
+      const line = parseKey(key, products);
       return line ? [{ key, qty, ...line }] : [];
     }),
-    [items],
+    [items, products],
   );
   const cartCount = useMemo(() => cartLines.reduce((n, l) => n + l.qty, 0), [cartLines]);
   const cartSubtotal = useMemo(() => cartLines.reduce((n, l) => n + l.qty * l.product.price, 0), [cartLines]);
-  const viewing = useMemo(() => PRODUCTS.find((p) => p.id === viewingId) ?? null, [viewingId]);
+  const viewing = useMemo(() => products.find((p) => p.id === viewingId) ?? null, [products, viewingId]);
 
   const value = useMemo(
-    () => ({ cartCount, cartLines, cartSubtotal, cartOpen, openCart, closeCart, addToBag, setQty, removeFromBag, clearBag, viewing, openProduct, closeProduct, filter, showCategory }),
-    [cartCount, cartLines, cartSubtotal, cartOpen, openCart, closeCart, addToBag, setQty, removeFromBag, clearBag, viewing, openProduct, closeProduct, filter, showCategory],
+    () => ({ products, cartCount, cartLines, cartSubtotal, cartOpen, openCart, closeCart, addToBag, setQty, removeFromBag, clearBag, viewing, openProduct, closeProduct, filter, showCategory }),
+    [products, cartCount, cartLines, cartSubtotal, cartOpen, openCart, closeCart, addToBag, setQty, removeFromBag, clearBag, viewing, openProduct, closeProduct, filter, showCategory],
   );
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }

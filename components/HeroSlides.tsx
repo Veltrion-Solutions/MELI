@@ -1,25 +1,28 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Photo from "./Photo";
-import { PRODUCTS, FEATURED_ID, formatPrice } from "@/lib/products";
+import { FEATURED_ID, formatPrice } from "@/lib/products";
+import { useShop } from "./ShopProvider";
 
-const SLIDES = PRODUCTS.filter((p) => p.image);
-const START = Math.max(0, SLIDES.findIndex((p) => p.id === FEATURED_ID));
 const INTERVAL = 5000;
 
 /** Auto-playing cross-fade slideshow with a slow zoom on the active slide and dot navigation. */
 export default function HeroSlides() {
+  const { products } = useShop();
+  const SLIDES = useMemo(() => products.filter((p) => p.image), [products]);
+  const START = Math.max(0, SLIDES.findIndex((p) => p.id === FEATURED_ID));
   const [i, setI] = useState(START);
   const [paused, setPaused] = useState(false);
 
   useEffect(() => {
-    if (paused || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    if (paused || SLIDES.length < 2 || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
     const t = setInterval(() => setI((n) => (n + 1) % SLIDES.length), INTERVAL);
     return () => clearInterval(t);
-  }, [paused]);
+  }, [paused, SLIDES.length]);
 
-  const cur = SLIDES[i];
+  const cur = SLIDES[i % Math.max(1, SLIDES.length)];
+  if (!cur) return null;
 
   return (
     <>

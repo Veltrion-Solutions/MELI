@@ -4,7 +4,7 @@ import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import Photo from "./Photo";
 import { useShop } from "./ShopProvider";
-import { PRODUCTS, formatPrice } from "@/lib/products";
+import { formatPrice } from "@/lib/products";
 
 export type CollectionKey = "new" | "dresses" | "tops";
 
@@ -29,7 +29,7 @@ const COLUMN_OPTIONS = [2, 3, 4, 5];
 const toggle = (arr: string[], v: string) => (arr.includes(v) ? arr.filter((x) => x !== v) : [...arr, v]);
 
 export default function Collection({ name }: { name: CollectionKey }) {
-  const { openProduct } = useShop();
+  const { products, openProduct } = useShop();
   const router = useRouter();
   const goBack = () => (window.history.length > 1 ? router.back() : router.push("/"));
   const c = COLLECTIONS[name];
@@ -42,7 +42,7 @@ export default function Collection({ name }: { name: CollectionKey }) {
   const [panel, setPanel] = useState(false);
   const [cols, setCols] = useState(4);
 
-  const base = useMemo(() => PRODUCTS.filter((p) => (name === "new" ? p.badge === "New" : p.category === name)), [name]);
+  const base = useMemo(() => products.filter((p) => (name === "new" ? p.badge === "New" : p.category === name)), [products, name]);
   const maxPrice = useMemo(() => Math.max(0, ...base.map((p) => p.price)), [base]);
 
   const list = useMemo(() => {

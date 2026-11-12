@@ -1,4 +1,4 @@
-import { ShopProvider } from "@/components/ShopProvider";
+import Shop from "@/components/Shop";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { FREE_SHIPPING_MIN, formatPrice } from "@/lib/products";
@@ -29,7 +29,7 @@ const FAQ = [
 
 export default function Page() {
   return (
-    <ShopProvider>
+    <Shop>
       <Header />
       <main className="policy">
         <section className="section">
@@ -106,6 +106,6 @@ export default function Page() {
         </section>
       </main>
       <Footer />
-    </ShopProvider>
+    </Shop>
   );
 }

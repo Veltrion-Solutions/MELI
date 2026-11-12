@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { ShopProvider } from "@/components/ShopProvider";
+import Shop from "@/components/Shop";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { createClient } from "@/lib/supabase/server";
@@ -16,11 +16,12 @@ export default async function Page() {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/login?next=/account");
 
+  const { data: isAdmin } = await supabase.rpc("is_admin");
   const name = (user.user_metadata?.full_name as string | undefined)?.trim();
   const since = new Date(user.created_at).toLocaleDateString("en-GB", { month: "long", year: "numeric" });
 
   return (
-    <ShopProvider>
+    <Shop>
       <Header />
       <main className="section account">
         <div className="container">
@@ -28,6 +29,12 @@ export default async function Page() {
             <p className="eyebrow">My account</p>
             <h1>Hello{name ? `, ${name.split(" ")[0]}` : ""}</h1>
           </div>
+
+          {isAdmin === true && (
+            <p className="account-admin">
+              You have admin access. <Link href="/admin" className="auth-link">Open the admin dashboard →</Link>
+            </p>
+          )}
 
           <div className="account-grid">
             <section className="account-card" aria-labelledby="acc-details">
@@ -53,6 +60,6 @@ export default async function Page() {
         </div>
       </main>
       <Footer />
-    </ShopProvider>
+    </Shop>
   );
 }

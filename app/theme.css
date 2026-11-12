@@ -417,3 +417,5 @@ img { max-width: 100%; }
 .account-empty { font-size: 14px; color: #6b6b6b; }
 .account-logout { margin-top: 28px; font-size: 13px; }
 @media (max-width: 700px) { .account-grid { grid-template-columns: 1fr; } }
+.account-admin { margin-top: 18px; padding: 14px 18px; border-radius: var(--radius); background: #181818; color: #fff; font-size: 14px; }
+.account-admin .auth-link { color: #fff; margin-left: 6px; }

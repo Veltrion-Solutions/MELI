@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { ShopProvider } from "@/components/ShopProvider";
+import Shop from "@/components/Shop";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import PasswordForm from "@/components/PasswordForm";
@@ -15,10 +15,10 @@ export default async function Page() {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/login?error=link");
   return (
-    <ShopProvider>
+    <Shop>
       <Header />
       <main className="auth"><PasswordForm /></main>
       <Footer />
-    </ShopProvider>
+    </Shop>
   );
 }

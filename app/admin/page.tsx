@@ -24,6 +24,7 @@ export default async function Page() {
             <h1>Products</h1>
             <p className="admin-sub">{rows.length} products · {rows.filter((r) => r.active).length} visible in the shop</p>
           </div>
+          <Link href="/admin/products/new" className="btn btn-solid admin-add">+ Add product</Link>
         </div>
 
         {error && <p className="auth-alert" role="alert">Couldn&rsquo;t load products. Has the database migration been run?</p>}

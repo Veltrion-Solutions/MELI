@@ -29,6 +29,8 @@ export async function login(_: AuthState, form: FormData): Promise<AuthState> {
   const supabase = await createClient();
   const { error } = await supabase.auth.signInWithPassword({ email, password });
   if (error) {
+    // Logged on the server only; never includes the password.
+    console.warn(`[login] Sign-in failed for ${email}: ${error.code ?? "unknown"} (${error.status ?? "-"}) ${error.message}`);
     const msg = error.code === "email_not_confirmed"
       ? "Please confirm your email first. Check your inbox for the link we sent."
       : "That email and password don't match. Please try again.";

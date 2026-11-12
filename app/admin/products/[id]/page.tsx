@@ -7,8 +7,11 @@ import { PRODUCT_COLUMNS, type ProductRow } from "@/lib/catalog";
 
 export const metadata = { title: "Edit product - MELI Admin" };
 
-export default async function Page({ params }: { params: Promise<{ id: string }> }) {
+type Props = { params: Promise<{ id: string }>; searchParams: Promise<{ created?: string }> };
+
+export default async function Page({ params, searchParams }: Props) {
   const { id } = await params;
+  const { created } = await searchParams;
   const admin = await getAdmin();
   if (!admin) redirect(`/login?next=/admin/products/${encodeURIComponent(id)}`);
 
@@ -27,6 +30,11 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
             <p className="admin-sub">Last updated {new Date(product.updated_at).toLocaleString("en-GB", { dateStyle: "medium", timeStyle: "short" })}</p>
           </div>
         </div>
+        {created && (
+          <p className="admin-ok admin-created" role="status">
+            Product added{product.active ? " and live in the shop" : " (hidden from the shop)"}. <Link href="/admin/products/new">Add another</Link>
+          </p>
+        )}
         <ProductEditor product={product} />
       </main>
     </>

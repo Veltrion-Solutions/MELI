@@ -27,7 +27,9 @@ export const safePath = (n: string | null | undefined, fallback = "/account") =>
  */
 export async function pathAfterLogin(supabase: SupabaseClient, next: string | null | undefined) {
   const want = safePath(next);
-  const { data: isAdmin } = await supabase.rpc("is_admin");
+  const { data: isAdmin, error } = await supabase.rpc("is_admin");
+  if (error) console.warn(`[login] is_admin check failed: ${error.code} ${error.message}`);
+  else console.info(`[login] Signed in; admin = ${isAdmin === true}`);
   if (want.startsWith("/admin")) return isAdmin === true ? want : "/account";
   if (want === "/account" && isAdmin === true) return "/admin";
   return want;

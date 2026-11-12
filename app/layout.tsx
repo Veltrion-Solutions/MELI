@@ -10,6 +10,8 @@ const serif = Montserrat({ subsets: ["latin"], weight: ["400", "500", "600", "80
 const sans = Poppins({ subsets: ["latin"], weight: ["400", "500", "600"], variable: "--font-sans" });
 
 export const metadata: Metadata = {
+  // Absolute base for social-share image URLs. Set NEXT_PUBLIC_SITE_URL to the live domain when deploying.
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"),
   title: "MELI - Wear MELI",
   description: "Soft days, well dressed. Easy dresses, tops, skirts and pants designed in Sri Lanka.",
   icons: {
@@ -30,7 +32,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${serif.variable} ${sans.variable}`}>
+    <html lang="en" className={`${serif.variable} ${sans.variable}`} data-scroll-behavior="smooth">
       <body>
         <ScrollEffects />
         {children}

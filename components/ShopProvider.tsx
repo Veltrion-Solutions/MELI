@@ -35,8 +35,13 @@ type Shop = {
 };
 
 const Ctx = createContext<Shop | null>(null);
-// v2: lines are keyed by product, size and colour.
-const STORAGE_KEY = "meli-cart-v2";
+// Each signed-in customer has their own saved bag, keyed by their account id, so
+// people sharing a computer never see each other's bags. Lines are product|size|colour.
+const cartKey = (owner: string) => `meli-cart-v3:${owner}`;
+// Older bags were saved per browser with no owner; they're discarded rather than given to whoever signs in next.
+const LEGACY_KEYS = ["meli-cart-v1", "meli-cart-v2"];
+/** Owner used only when customer accounts aren't connected yet. */
+const GUEST = "guest";
 const MAX_QTY = 10;
 const SEP = "|";
 
@@ -49,14 +54,18 @@ type PendingAdd = { id: string; size: Size; colour: string; at: number };
 const PENDING_KEY = "meli-pending-add";
 const PENDING_TTL = 60 * 60 * 1000; // 1 hour, enough to confirm a new account by email
 
-/** Reads the local session cookie; no network call unless the token needs refreshing. */
-async function isSignedIn() {
-  if (!supabaseReady) return true; // accounts not connected yet: don't block the shop
+/**
+ * The signed-in customer's id, or null when signed out. Reads the local session cookie
+ * (no network call unless the token needs refreshing). The bag lives in this browser
+ * only, so this just decides whose bag to show; nothing is fetched from other accounts.
+ */
+async function currentOwner(): Promise<string | null> {
+  if (!supabaseReady) return GUEST; // accounts not connected yet: don't block the shop
   try {
     const { data } = await createClient().auth.getSession();
-    return Boolean(data.session);
+    return data.session?.user.id ?? null;
   } catch {
-    return false;
+    return null;
   }
 }
 
@@ -69,38 +78,57 @@ function parseKey(key: string, products: Product[]) {
 
 export function ShopProvider({ products, children }: { products: Product[]; children: React.ReactNode }) {
   const [items, setItems] = useState<Stored>({});
-  const [loaded, setLoaded] = useState(false);
+  /** Whose bag to show: account id, null when signed out, undefined while checking. */
+  const [owner, setOwner] = useState<string | null | undefined>(undefined);
+  /** Which owner's saved bag is currently in `items`; saving only happens when it matches `owner`. */
+  const [loadedFor, setLoadedFor] = useState<string | null | undefined>(undefined);
   const [cartOpen, setCartOpen] = useState(false);
   const [viewingId, setViewingId] = useState<string | null>(null);
   const [filter, setFilter] = useState<Filter>(null);
   const router = useRouter();
 
-  // Restore the bag after mount (keeps server and first client render identical).
+  // Find out who is signed in, and follow sign-in / sign-out in this tab and others.
   useEffect(() => {
+    try { LEGACY_KEYS.forEach((k) => window.localStorage.removeItem(k)); } catch { /* ignore */ }
+    let active = true;
+    currentOwner().then((o) => { if (active) setOwner(o); });
+    if (!supabaseReady) return () => { active = false; };
+    const { data } = createClient().auth.onAuthStateChange((_event, session) => {
+      if (active) setOwner(session?.user.id ?? null);
+    });
+    return () => { active = false; data.subscription.unsubscribe(); };
+  }, []);
+
+  // Load the bag that belongs to the current owner (empty when signed out).
+  useEffect(() => {
+    if (owner === undefined) return;
+    setCartOpen(false);
+    if (owner === null) { setItems({}); setLoadedFor(null); return; }
+    const clean: Stored = {};
     try {
-      const raw = window.localStorage.getItem(STORAGE_KEY);
-      if (raw) {
-        const parsed = JSON.parse(raw) as Stored;
-        const clean: Stored = {};
-        for (const [key, qty] of Object.entries(parsed)) {
-          if (parseKey(key, products) && Number.isFinite(qty) && qty > 0) clean[key] = Math.min(MAX_QTY, Math.floor(qty));
-        }
-        setItems(clean);
+      const raw = window.localStorage.getItem(cartKey(owner));
+      const parsed = raw ? (JSON.parse(raw) as Stored) : {};
+      for (const [key, qty] of Object.entries(parsed)) {
+        if (parseKey(key, products) && Number.isFinite(qty) && qty > 0) clean[key] = Math.min(MAX_QTY, Math.floor(qty));
       }
     } catch {
       /* storage unavailable or corrupt: start with an empty bag */
     }
-    setLoaded(true);
-  }, []);
+    setItems(clean);
+    setLoadedFor(owner);
+    // products only filter out discontinued lines; re-reading on every catalogue change isn't needed.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [owner]);
 
+  // Save changes to the current owner's bag only.
   useEffect(() => {
-    if (!loaded) return;
+    if (!loadedFor || loadedFor !== owner) return;
     try {
-      window.localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
+      window.localStorage.setItem(cartKey(loadedFor), JSON.stringify(items));
     } catch {
       /* ignore quota / private-mode errors */
     }
-  }, [items, loaded]);
+  }, [items, loadedFor, owner]);
 
   const putInBag = useCallback((id: string, size: Size, colour: string) => {
     const key = lineKey(id, size, colour);
@@ -111,7 +139,7 @@ export function ShopProvider({ products, children }: { products: Product[]; chil
   // Shoppers must be signed in to use the bag. Signed-out shoppers are sent to /login;
   // their pick is remembered and added once they come back signed in.
   const addToBag = useCallback(async (id: string, size: Size, colour: string) => {
-    if (await isSignedIn()) { putInBag(id, size, colour); return; }
+    if (await currentOwner()) { putInBag(id, size, colour); return; }
     try {
       window.localStorage.setItem(PENDING_KEY, JSON.stringify({ id, size, colour, at: Date.now() } satisfies PendingAdd));
     } catch { /* storage blocked: they'll just pick again after signing in */ }
@@ -120,23 +148,19 @@ export function ShopProvider({ products, children }: { products: Product[]; chil
   }, [putInBag, router]);
 
   // Back from signing in (or confirming a new account): finish the pending add.
+  // Runs once the signed-in customer's own bag has loaded, so the pick lands in their bag.
   useEffect(() => {
-    if (!loaded) return;
+    if (!loadedFor || loadedFor !== owner) return;
     let raw: string | null = null;
     try { raw = window.localStorage.getItem(PENDING_KEY); } catch { return; }
     if (!raw) return;
-    let cancelled = false;
-    isSignedIn().then((ok) => {
-      if (cancelled || !ok) return;
-      try { window.localStorage.removeItem(PENDING_KEY); } catch { /* ignore */ }
-      try {
-        const p = JSON.parse(raw!) as PendingAdd;
-        if (Date.now() - p.at > PENDING_TTL) return;
-        if (parseKey(lineKey(p.id, p.size, p.colour), products)) putInBag(p.id, p.size, p.colour);
-      } catch { /* corrupt: drop it */ }
-    });
-    return () => { cancelled = true; };
-  }, [loaded, products, putInBag]);
+    try { window.localStorage.removeItem(PENDING_KEY); } catch { /* ignore */ }
+    try {
+      const p = JSON.parse(raw) as PendingAdd;
+      if (Date.now() - p.at > PENDING_TTL) return;
+      if (parseKey(lineKey(p.id, p.size, p.colour), products)) putInBag(p.id, p.size, p.colour);
+    } catch { /* corrupt: drop it */ }
+  }, [loadedFor, owner, products, putInBag]);
   const setQty = useCallback((key: string, qty: number) => {
     setItems((prev) => {
       const next = { ...prev };

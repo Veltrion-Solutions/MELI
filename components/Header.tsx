@@ -52,6 +52,11 @@ export default function Header() {
             <span className="logo-sub">Wear MELI</span>
           </Link>
           <div className="header-right">
+            <Link href="/account" className="bag" aria-label="My account" title="My account">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                <circle cx="12" cy="8" r="4" /><path d="M4 21a8 8 0 0 1 16 0" />
+              </svg>
+            </Link>
             <button className="bag" aria-label={`Shopping bag, ${cartCount} items`} aria-haspopup="dialog" onClick={openCart}>
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
                 <path d="M5 8h14l-1 12H6L5 8Z" /><path d="M9 8V6a3 3 0 0 1 6 0v2" />

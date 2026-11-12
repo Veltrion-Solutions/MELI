@@ -1,10 +1,10 @@
 "use client";
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
-import { PRODUCTS, type Category, type Product } from "@/lib/products";
+import { PRODUCTS, SIZES, type Category, type Product, type Size } from "@/lib/products";
 
 type Filter = Category | null;
-export type CartLine = { product: Product; qty: number };
+export type CartLine = { key: string; product: Product; size: Size; colour: string; qty: number };
 
 type Shop = {
   /** Total number of items in the bag. */
@@ -14,26 +14,43 @@ type Shop = {
   cartOpen: boolean;
   openCart: () => void;
   closeCart: () => void;
-  /** Adds one of the product to the bag and opens the cart drawer. */
-  addToBag: (id: string) => void;
-  setQty: (id: string, qty: number) => void;
-  removeFromBag: (id: string) => void;
+  /** Adds one of the product in the chosen size/colour and opens the cart drawer. */
+  addToBag: (id: string, size: Size, colour: string) => void;
+  /** Line actions take the cart line key. */
+  setQty: (key: string, qty: number) => void;
+  removeFromBag: (key: string) => void;
   clearBag: () => void;
+  /** Product shown in the detail popup (null = closed). */
+  viewing: Product | null;
+  openProduct: (id: string) => void;
+  closeProduct: () => void;
   filter: Filter;
   /** Sets the product filter (null = all) and scrolls to the product grid. */
   showCategory: (c: Filter) => void;
 };
 
 const Ctx = createContext<Shop | null>(null);
-const STORAGE_KEY = "meli-cart-v1";
+// v2: lines are keyed by product, size and colour.
+const STORAGE_KEY = "meli-cart-v2";
 const MAX_QTY = 10;
+const SEP = "|";
 
 type Stored = Record<string, number>;
+
+const lineKey = (id: string, size: Size, colour: string) => [id, size, colour].join(SEP);
+
+function parseKey(key: string) {
+  const [id, size, colour] = key.split(SEP);
+  const product = PRODUCTS.find((p) => p.id === id);
+  if (!product || !(SIZES as readonly string[]).includes(size) || !product.colours.some((c) => c.name === colour)) return null;
+  return { product, size: size as Size, colour };
+}
 
 export function ShopProvider({ children }: { children: React.ReactNode }) {
   const [items, setItems] = useState<Stored>({});
   const [loaded, setLoaded] = useState(false);
   const [cartOpen, setCartOpen] = useState(false);
+  const [viewingId, setViewingId] = useState<string | null>(null);
   const [filter, setFilter] = useState<Filter>(null);
 
   // Restore the bag after mount (keeps server and first client render identical).
@@ -43,8 +60,8 @@ export function ShopProvider({ children }: { children: React.ReactNode }) {
       if (raw) {
         const parsed = JSON.parse(raw) as Stored;
         const clean: Stored = {};
-        for (const [id, qty] of Object.entries(parsed)) {
-          if (PRODUCTS.some((p) => p.id === id) && Number.isFinite(qty) && qty > 0) clean[id] = Math.min(MAX_QTY, Math.floor(qty));
+        for (const [key, qty] of Object.entries(parsed)) {
+          if (parseKey(key) && Number.isFinite(qty) && qty > 0) clean[key] = Math.min(MAX_QTY, Math.floor(qty));
         }
         setItems(clean);
       }
@@ -63,26 +80,29 @@ export function ShopProvider({ children }: { children: React.ReactNode }) {
     }
   }, [items, loaded]);
 
-  const addToBag = useCallback((id: string) => {
-    setItems((prev) => ({ ...prev, [id]: Math.min(MAX_QTY, (prev[id] ?? 0) + 1) }));
+  const addToBag = useCallback((id: string, size: Size, colour: string) => {
+    const key = lineKey(id, size, colour);
+    setItems((prev) => ({ ...prev, [key]: Math.min(MAX_QTY, (prev[key] ?? 0) + 1) }));
     setCartOpen(true);
   }, []);
-  const setQty = useCallback((id: string, qty: number) => {
+  const setQty = useCallback((key: string, qty: number) => {
     setItems((prev) => {
       const next = { ...prev };
-      if (qty <= 0) delete next[id];
-      else next[id] = Math.min(MAX_QTY, qty);
+      if (qty <= 0) delete next[key];
+      else next[key] = Math.min(MAX_QTY, qty);
       return next;
     });
   }, []);
-  const removeFromBag = useCallback((id: string) => setItems((prev) => {
+  const removeFromBag = useCallback((key: string) => setItems((prev) => {
     const next = { ...prev };
-    delete next[id];
+    delete next[key];
     return next;
   }), []);
   const clearBag = useCallback(() => setItems({}), []);
   const openCart = useCallback(() => setCartOpen(true), []);
   const closeCart = useCallback(() => setCartOpen(false), []);
+  const openProduct = useCallback((id: string) => setViewingId(id), []);
+  const closeProduct = useCallback(() => setViewingId(null), []);
 
   const showCategory = useCallback((c: Filter) => {
     setFilter(c);
@@ -90,18 +110,19 @@ export function ShopProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const cartLines = useMemo<CartLine[]>(
-    () => Object.entries(items).flatMap(([id, qty]) => {
-      const product = PRODUCTS.find((p) => p.id === id);
-      return product ? [{ product, qty }] : [];
+    () => Object.entries(items).flatMap(([key, qty]) => {
+      const line = parseKey(key);
+      return line ? [{ key, qty, ...line }] : [];
     }),
     [items],
   );
   const cartCount = useMemo(() => cartLines.reduce((n, l) => n + l.qty, 0), [cartLines]);
   const cartSubtotal = useMemo(() => cartLines.reduce((n, l) => n + l.qty * l.product.price, 0), [cartLines]);
+  const viewing = useMemo(() => PRODUCTS.find((p) => p.id === viewingId) ?? null, [viewingId]);
 
   const value = useMemo(
-    () => ({ cartCount, cartLines, cartSubtotal, cartOpen, openCart, closeCart, addToBag, setQty, removeFromBag, clearBag, filter, showCategory }),
-    [cartCount, cartLines, cartSubtotal, cartOpen, openCart, closeCart, addToBag, setQty, removeFromBag, clearBag, filter, showCategory],
+    () => ({ cartCount, cartLines, cartSubtotal, cartOpen, openCart, closeCart, addToBag, setQty, removeFromBag, clearBag, viewing, openProduct, closeProduct, filter, showCategory }),
+    [cartCount, cartLines, cartSubtotal, cartOpen, openCart, closeCart, addToBag, setQty, removeFromBag, clearBag, viewing, openProduct, closeProduct, filter, showCategory],
   );
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }

@@ -27,6 +27,7 @@
 .cart-line { display: grid; grid-template-columns: 80px 1fr auto; gap: 14px; padding: 16px 0; border-bottom: 1px solid #efefef; animation: card-in 0.4s cubic-bezier(0.21, 0.6, 0.35, 1) both; }
 .cart-thumb { position: relative; width: 80px; aspect-ratio: 3 / 4; border-radius: 8px; overflow: hidden; background: #f1f1f1; }
 .cart-name { font-size: 14px; line-height: 1.35; }
+.cart-variant { font-size: 12px; color: #6b6b6b; margin-top: 2px; }
 .cart-price { font-size: 13px; color: #6b6b6b; margin-top: 2px; }
 .cart-qty { display: inline-flex; align-items: center; border: 1px solid #d6d6d6; border-radius: 999px; margin-top: 10px; }
 .cart-qty button { width: 32px; height: 32px; font-size: 16px; display: grid; place-items: center; transition: background-color 0.3s ease; border-radius: 50%; }
@@ -54,4 +55,89 @@
 @media (prefers-reduced-motion: reduce) {
   .cart, .cart-overlay, .cart-bar span { transition: none; }
   .cart-line { animation: none; }
+}
+
+/* ---------- Product cards: open the detail popup ---------- */
+.product-open { position: absolute; inset: 0; z-index: 1; width: 100%; background: transparent; border: 0; cursor: pointer; }
+.product-open:focus-visible { outline: 2px solid #181818; outline-offset: -4px; border-radius: var(--radius); }
+.product-name { font: inherit; color: inherit; text-align: left; background: none; border: 0; padding: 0; cursor: pointer; }
+.product-name:hover { text-decoration: underline; text-underline-offset: 3px; }
+
+/* ---------- Product detail popup ---------- */
+.pd-overlay {
+  position: fixed; inset: 0; z-index: 110; display: grid; place-items: center; padding: 24px;
+  background: rgba(17, 17, 17, 0.5); animation: pd-fade 0.3s ease both; overflow-y: auto;
+}
+.pd {
+  position: relative; width: min(980px, 100%); max-height: calc(100dvh - 48px); overflow-y: auto;
+  background: #fff; border-radius: 14px; box-shadow: 0 24px 60px rgba(0, 0, 0, 0.2);
+  animation: pd-in 0.45s cubic-bezier(0.21, 0.6, 0.35, 1) both;
+}
+.pd:focus { outline: none; }
+@keyframes pd-fade { from { opacity: 0; } }
+@keyframes pd-in { from { opacity: 0; transform: translateY(24px) scale(0.98); } }
+
+.pd-close {
+  position: absolute; top: 12px; right: 12px; z-index: 3; width: 38px; height: 38px; border-radius: 50%;
+  display: grid; place-items: center; font-size: 26px; line-height: 1; background: rgba(255, 255, 255, 0.92);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); transition: transform 0.4s ease;
+}
+.pd-close:hover { transform: rotate(90deg); }
+
+.pd-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+.pd-media { padding: 20px; display: grid; gap: 12px; align-content: start; }
+.pd-main { position: relative; aspect-ratio: 3 / 4; border-radius: var(--radius); overflow: hidden; background: var(--tile); }
+.pd-main .badge { position: absolute; top: 12px; left: 12px; }
+.pd-thumbs { display: flex; gap: 8px; overflow-x: auto; }
+.pd-thumb { position: relative; flex: none; width: 64px; aspect-ratio: 3 / 4; border-radius: 6px; overflow: hidden; background: var(--tile); border: 2px solid transparent; opacity: 0.65; transition: opacity 0.3s ease, border-color 0.3s ease; }
+.pd-thumb:hover { opacity: 1; }
+.pd-thumb[aria-pressed="true"] { border-color: #181818; opacity: 1; }
+
+.pd-info { padding: 36px 32px 32px 12px; display: flex; flex-direction: column; gap: 18px; }
+.pd-name { font-family: var(--serif); font-weight: 400; text-transform: uppercase; font-size: 28px; line-height: 1.15; color: #181818; margin-top: -10px; }
+.pd-price { font-size: 18px; font-weight: 600; color: #181818; margin-top: -8px; }
+.pd-desc { font-size: 14px; line-height: 1.65; color: #6b6b6b; }
+
+.pd-opt { display: grid; gap: 10px; }
+.pd-label { font-size: 13px; font-weight: 600; color: #181818; }
+.pd-label span { font-weight: 400; color: #6b6b6b; }
+.pd-label-row { display: flex; justify-content: space-between; align-items: baseline; }
+.pd-link { font-size: 12px; text-decoration: underline; text-underline-offset: 3px; color: #181818; }
+
+.pd-swatches { display: flex; gap: 10px; flex-wrap: wrap; }
+.pd-swatch { width: 30px; height: 30px; border-radius: 50%; border: 1px solid rgba(0, 0, 0, 0.18); box-shadow: 0 0 0 3px #fff; transition: box-shadow 0.25s ease; }
+.pd-swatch[aria-checked="true"] { box-shadow: 0 0 0 3px #fff, 0 0 0 4px #181818; }
+
+.pd-sizes { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; }
+.pd-size { height: 42px; border: 1px solid #d6d6d6; border-radius: 8px; font-size: 13px; color: #181818; background: #fff; transition: border-color 0.25s ease, background-color 0.25s ease, color 0.25s ease; }
+.pd-size:hover:not(:disabled) { border-color: #181818; }
+.pd-size[aria-checked="true"] { background: #181818; border-color: #181818; color: #fff; }
+.pd-size:disabled { color: #b5b5b5; background: repeating-linear-gradient(135deg, #fff 0 6px, #f4f4f4 6px 7px); cursor: not-allowed; text-decoration: line-through; }
+.pd-error { font-size: 12px; color: #b3261e; }
+
+.pd-chart { display: grid; gap: 8px; border: 1px solid #e6e6e6; border-radius: var(--radius); overflow-x: auto; animation: pd-fade 0.3s ease both; }
+.pd-chart .size-table { min-width: 0; font-size: 12.5px; }
+.pd-chart .size-table th, .pd-chart .size-table td { padding: 9px 12px; }
+.pd-chart .size-table tr[aria-current] { background: #f3f3f3; }
+.pd-chart .pd-small { padding: 0 12px 10px; }
+
+.pd-add { width: 100%; text-align: center; }
+.pd-small { font-size: 12px; color: #6b6b6b; }
+.pd-small a { color: #181818; text-decoration: underline; text-underline-offset: 3px; }
+
+.pd-more { border-top: 1px solid #ececec; padding-top: 14px; }
+.pd-more summary { font-size: 13px; font-weight: 600; cursor: pointer; color: #181818; }
+.pd-more ul { margin-top: 10px; padding-left: 18px; list-style: disc; display: grid; gap: 4px; font-size: 13.5px; color: #6b6b6b; }
+
+@media (max-width: 800px) {
+  .pd-overlay { padding: 0; place-items: end center; }
+  .pd { max-height: 92dvh; border-radius: 16px 16px 0 0; }
+  .pd-grid { grid-template-columns: 1fr; }
+  .pd-media { padding: 16px 16px 0; }
+  .pd-main { aspect-ratio: 4 / 5; }
+  .pd-info { padding: 22px 16px 24px; }
+  .pd-name { font-size: 24px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .pd-overlay, .pd, .pd-chart { animation: none; }
 }

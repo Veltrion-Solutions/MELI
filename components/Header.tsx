@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useShop } from "./ShopProvider";
 import CartDrawer from "./CartDrawer";
+import ProductModal from "./ProductModal";
 
 const CATEGORY_LINKS = [
   { label: "Dresses", href: "/dresses" },
@@ -61,6 +62,7 @@ export default function Header() {
         </div>
       </header>
       <CartDrawer />
+      <ProductModal />
     </>
   );
 }

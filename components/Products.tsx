@@ -6,7 +6,7 @@ import { useShop } from "./ShopProvider";
 import { CATEGORIES, PRODUCTS, formatPrice } from "@/lib/products";
 
 export default function Products() {
-  const { filter, showCategory, addToBag } = useShop();
+  const { filter, showCategory, openProduct } = useShop();
   const list = filter ? PRODUCTS.filter((p) => p.category === filter) : PRODUCTS;
   const title = filter ? CATEGORIES.find((c) => c.id === filter)!.label : "New arrivals";
 
@@ -61,14 +61,15 @@ export default function Products() {
           {list.map((p) => (
             <article key={p.id} className="product">
               <div className="product-img">
+                <button type="button" className="product-open" aria-label={`View ${p.name} details`} onClick={() => openProduct(p.id)} />
                 <Photo src={p.image} alt={p.name} sizes="(max-width: 600px) 60vw, (max-width: 900px) 44vw, (max-width: 1100px) 32vw, 340px" />
                 {p.hoverImage && (
                   <div className="product-alt"><Photo src={p.hoverImage} alt={`${p.name} alternate view`} sizes="(max-width: 600px) 60vw, (max-width: 900px) 44vw, (max-width: 1100px) 32vw, 340px" /></div>
                 )}
                 {p.badge && <span className="badge">{p.badge}</span>}
-                <button className="add-btn" onClick={() => addToBag(p.id)}>Add to bag</button>
+                <button type="button" className="add-btn" onClick={() => openProduct(p.id)}>Quick view</button>
               </div>
-              <h3>{p.name}</h3>
+              <h3><button type="button" className="product-name" onClick={() => openProduct(p.id)}>{p.name}</button></h3>
               <p className="price">{formatPrice(p.price)}</p>
             </article>
           ))}

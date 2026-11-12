@@ -29,7 +29,7 @@ const COLUMN_OPTIONS = [2, 3, 4, 5];
 const toggle = (arr: string[], v: string) => (arr.includes(v) ? arr.filter((x) => x !== v) : [...arr, v]);
 
 export default function Collection({ name }: { name: CollectionKey }) {
-  const { addToBag } = useShop();
+  const { openProduct } = useShop();
   const router = useRouter();
   const goBack = () => (window.history.length > 1 ? router.back() : router.push("/"));
   const c = COLLECTIONS[name];
@@ -134,14 +134,15 @@ export default function Collection({ name }: { name: CollectionKey }) {
                 {list.map((p) => (
                   <article key={p.id} className="product">
                     <div className="product-img">
+                      <button type="button" className="product-open" aria-label={`View ${p.name} details`} onClick={() => openProduct(p.id)} />
                       <Photo src={p.image} alt={p.name} sizes="(max-width: 600px) 50vw, (max-width: 1100px) 34vw, 340px" />
                       {p.hoverImage && (
                         <div className="product-alt"><Photo src={p.hoverImage} alt={`${p.name} alternate view`} sizes="(max-width: 600px) 50vw, (max-width: 1100px) 34vw, 340px" /></div>
                       )}
                       {p.badge && <span className="badge">{p.badge}</span>}
-                      <button className="add-btn" onClick={() => addToBag(p.id)}>Add to bag</button>
+                      <button type="button" className="add-btn" onClick={() => openProduct(p.id)}>Quick view</button>
                     </div>
-                    <h3>{p.name}</h3>
+                    <h3><button type="button" className="product-name" onClick={() => openProduct(p.id)}>{p.name}</button></h3>
                     <p className="price">{formatPrice(p.price)}</p>
                   </article>
                 ))}

@@ -2,14 +2,7 @@
 
 import { useState } from "react";
 
-// Body measurements in centimetres; inches are derived.
-const ROWS = [
-  { size: "XS", uk: "6", bust: [80, 84], waist: [62, 66], hips: [86, 90] },
-  { size: "S", uk: "8", bust: [84, 88], waist: [66, 70], hips: [90, 94] },
-  { size: "M", uk: "10", bust: [88, 92], waist: [70, 74], hips: [94, 98] },
-  { size: "L", uk: "12", bust: [92, 98], waist: [74, 80], hips: [98, 104] },
-  { size: "XL", uk: "14", bust: [98, 104], waist: [80, 86], hips: [104, 110] },
-];
+import { SIZE_CHART as ROWS } from "@/lib/products";
 
 const TIPS = [
   { title: "Bust", text: "Measure around the fullest part of your chest, keeping the tape level." },

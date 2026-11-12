@@ -62,21 +62,22 @@ export default function CartDrawer() {
             </div>
 
             <ul className="cart-list">
-              {cartLines.map(({ product: p, qty }) => (
-                <li key={p.id} className="cart-line">
+              {cartLines.map(({ key, product: p, size, colour, qty }) => (
+                <li key={key} className="cart-line">
                   <div className="cart-thumb"><Photo src={p.image} alt={p.name} sizes="160px" /></div>
                   <div className="cart-info">
                     <p className="cart-name">{p.name}</p>
+                    <p className="cart-variant">{colour} · Size {size}</p>
                     <p className="cart-price">{formatPrice(p.price)}</p>
                     <div className="cart-qty" role="group" aria-label={`Quantity of ${p.name}`}>
-                      <button type="button" aria-label="Decrease quantity" onClick={() => setQty(p.id, qty - 1)}>−</button>
+                      <button type="button" aria-label="Decrease quantity" onClick={() => setQty(key, qty - 1)}>−</button>
                       <span aria-live="polite">{qty}</span>
-                      <button type="button" aria-label="Increase quantity" onClick={() => setQty(p.id, qty + 1)} disabled={qty >= 10}>+</button>
+                      <button type="button" aria-label="Increase quantity" onClick={() => setQty(key, qty + 1)} disabled={qty >= 10}>+</button>
                     </div>
                   </div>
                   <div className="cart-side">
                     <p className="cart-line-total">{formatPrice(p.price * qty)}</p>
-                    <button type="button" className="cart-remove" onClick={() => removeFromBag(p.id)}>Remove</button>
+                    <button type="button" className="cart-remove" onClick={() => removeFromBag(key)}>Remove</button>
                   </div>
                 </li>
               ))}

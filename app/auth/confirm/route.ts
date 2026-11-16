@@ -2,15 +2,18 @@ import { type EmailOtpType } from "@supabase/supabase-js";
 import { type NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { supabaseReady } from "@/lib/supabase/config";
+import { safePath } from "@/lib/site";
+
+const OTP_TYPES: EmailOtpType[] = ["signup", "recovery", "invite", "magiclink", "email", "email_change"];
 
 /** Landing point for links in signup-confirmation and password-reset emails. */
 export async function GET(request: NextRequest) {
   const { searchParams } = request.nextUrl;
-  const tokenHash = searchParams.get("token_hash");
-  const type = searchParams.get("type") as EmailOtpType | null;
-  const code = searchParams.get("code");
-  const nextParam = searchParams.get("next") ?? "/account";
-  const next = nextParam.startsWith("/") && !nextParam.startsWith("//") ? nextParam : "/account";
+  const tokenHash = searchParams.get("token_hash")?.slice(0, 512) ?? null;
+  const typeRaw = searchParams.get("type") as EmailOtpType | null;
+  const type = typeRaw && OTP_TYPES.includes(typeRaw) ? typeRaw : null;
+  const code = searchParams.get("code")?.slice(0, 512) ?? null;
+  const next = safePath(searchParams.get("next"));
 
   const to = request.nextUrl.clone();
   to.search = "";

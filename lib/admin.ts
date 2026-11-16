@@ -2,6 +2,9 @@ import "server-only";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { createClient } from "./supabase/server";
 import { supabaseReady } from "./supabase/config";
+import { safePath } from "./site";
+
+export { safePath };
 
 /**
  * Returns the signed-in admin, or null. getUser() verifies the session with Supabase,
@@ -17,9 +20,6 @@ export async function getAdmin() {
   return { supabase, user };
 }
 
-/** Only allow redirects back into this site. */
-export const safePath = (n: string | null | undefined, fallback = "/account") =>
-  n && n.startsWith("/") && !n.startsWith("//") ? n : fallback;
 
 /**
  * Where to send someone after they sign in on the shared /login page:

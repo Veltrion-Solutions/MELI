@@ -1,32 +1,32 @@
 "use server";
 
-import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { supabaseReady } from "@/lib/supabase/config";
 import { pathAfterLogin, safePath } from "@/lib/admin";
 import { passwordProblem } from "@/lib/password";
+import { siteUrl } from "@/lib/site";
+import { LIMITS, TOO_MANY, allowed, clientIp } from "@/lib/rate-limit";
 
 export type AuthState = { error?: string; message?: string; email?: string; name?: string } | undefined;
 
-const str = (f: FormData, k: string) => String(f.get(k) ?? "").trim();
-
-async function siteUrl() {
-  const h = await headers();
-  const origin = h.get("origin");
-  if (origin) return origin;
-  const host = h.get("x-forwarded-host") ?? h.get("host");
-  const proto = h.get("x-forwarded-proto") ?? "http";
-  return `${proto}://${host}`;
-}
+/** Form text, trimmed and capped so oversized input never reaches Supabase. */
+const str = (f: FormData, k: string, max = 320) => String(f.get(k) ?? "").trim().slice(0, max);
+const secret = (f: FormData, k: string) => String(f.get(k) ?? "").slice(0, 200);
 
 const NOT_READY: AuthState = { error: "Customer accounts aren't connected yet. Add the Supabase keys to .env.local." };
 
 export async function login(_: AuthState, form: FormData): Promise<AuthState> {
   if (!supabaseReady) return NOT_READY;
-  const email = str(form, "email");
-  const password = String(form.get("password") ?? "");
+  const email = str(form, "email").toLowerCase();
+  const password = secret(form, "password");
+  // Slows password guessing: per visitor, and per account so it can't be spread across addresses.
+  const ip = await clientIp();
+  if (!(await allowed([`login:ip:${ip}`, LIMITS.loginIp], [`login:email:${email}`, LIMITS.loginEmail]))) {
+    console.warn(`[login] Rate limited (ip ${ip})`);
+    return { error: TOO_MANY, email };
+  }
   const supabase = await createClient();
   const { error } = await supabase.auth.signInWithPassword({ email, password });
   if (error) {
@@ -44,10 +44,10 @@ export async function login(_: AuthState, form: FormData): Promise<AuthState> {
 
 export async function signup(_: AuthState, form: FormData): Promise<AuthState> {
   if (!supabaseReady) return NOT_READY;
-  const name = str(form, "name");
-  const email = str(form, "email");
-  const password = String(form.get("password") ?? "");
-  const confirm = String(form.get("confirm") ?? "");
+  const name = str(form, "name", 120);
+  const email = str(form, "email").toLowerCase();
+  const password = secret(form, "password");
+  const confirm = secret(form, "confirm");
   const back = { email, name };
   // Return to the page they came from (e.g. the dress they were adding), not /admin.
   const nextRaw = safePath(str(form, "next"));
@@ -59,6 +59,7 @@ export async function signup(_: AuthState, form: FormData): Promise<AuthState> {
   const problem = passwordProblem(password, email);
   if (problem) return { error: problem, ...back };
   if (password !== confirm) return { error: "The two passwords don't match.", ...back };
+  if (!(await allowed([`signup:ip:${await clientIp()}`, LIMITS.signupIp]))) return { error: TOO_MANY, ...back };
 
   const supabase = await createClient();
   const { data, error } = await supabase.auth.signUp({
@@ -86,7 +87,12 @@ export async function signup(_: AuthState, form: FormData): Promise<AuthState> {
 
 export async function forgotPassword(_: AuthState, form: FormData): Promise<AuthState> {
   if (!supabaseReady) return NOT_READY;
-  const email = str(form, "email");
+  const email = str(form, "email").toLowerCase();
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return { error: "Please enter a valid email address.", email };
+  // Stops the reset form being used to flood someone's inbox.
+  if (!(await allowed([`reset:ip:${await clientIp()}`, LIMITS.resetIp], [`reset:email:${email}`, LIMITS.resetEmail]))) {
+    return { error: TOO_MANY, email };
+  }
   const supabase = await createClient();
   const { error } = await supabase.auth.resetPasswordForEmail(email, {
     redirectTo: `${await siteUrl()}/auth/confirm?next=/account/password`,

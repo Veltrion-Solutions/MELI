@@ -3,16 +3,18 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { passwordProblem } from "@/lib/password";
+import { LIMITS, TOO_MANY, allowed } from "@/lib/rate-limit";
 
 export type PwState = { error?: string } | undefined;
 
 export async function updatePassword(_: PwState, form: FormData): Promise<PwState> {
-  const password = String(form.get("password") ?? "");
-  const confirm = String(form.get("confirm") ?? "");
+  const password = String(form.get("password") ?? "").slice(0, 200);
+  const confirm = String(form.get("confirm") ?? "").slice(0, 200);
 
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return { error: "Your session has ended. Please request a new reset link." };
+  if (!(await allowed([`password:user:${user.id}`, LIMITS.passwordUser]))) return { error: TOO_MANY };
 
   const problem = passwordProblem(password, user.email);
   if (problem) return { error: problem };

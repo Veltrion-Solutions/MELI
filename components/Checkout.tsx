@@ -191,7 +191,7 @@ export default function Checkout({ defaults }: { defaults: CheckoutDefaults }) {
                   <input id="co-phone" type="tel" inputMode="tel" autoComplete="tel" placeholder="077 123 4567" value={details.phone} onChange={set("phone")} aria-invalid={!!errors.phone || undefined} />
                 </Field>
               </div>
-              <Field id="email" label="Email" hint="We'll send your order confirmation here" error={errors.email}>
+              <Field id="email" label="Email" hint="Your confirmation goes to your account email" error={errors.email}>
                 <input id="co-email" type="email" autoComplete="email" value={details.email} onChange={set("email")} aria-invalid={!!errors.email || undefined} />
               </Field>
             </fieldset>

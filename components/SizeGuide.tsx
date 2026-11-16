@@ -7,29 +7,28 @@ import { SIZE_CHART as ROWS } from "@/lib/products";
 const TIPS = [
   { title: "Bust", text: "Measure around the fullest part of your chest, keeping the tape level." },
   { title: "Waist", text: "Measure around your natural waistline, the narrowest part of your torso." },
-  { title: "Hips", text: "Stand with feet together and measure around the fullest part of your hips." },
+  { title: "Hip", text: "Stand with feet together and measure around the fullest part of your hips." },
 ];
 
-type Unit = "cm" | "in";
+type Unit = "in" | "cm";
 
-function fmt([a, b]: number[], unit: Unit) {
-  if (unit === "cm") return `${a}–${b}`;
-  const r = (n: number) => (Math.round((n / 2.54) * 2) / 2).toString();
-  return `${r(a)}–${r(b)}`;
+/** Chart values are stored in inches. */
+function fmt(n: number, unit: Unit) {
+  return unit === "in" ? String(n) : String(Math.round(n * 2.54));
 }
 
 export default function SizeGuide() {
-  const [unit, setUnit] = useState<Unit>("cm");
+  const [unit, setUnit] = useState<Unit>("in");
   return (
     <section className="section size-guide">
       <div className="container">
         <div className="size-head">
           <div className="section-head">
             <p className="eyebrow">Fit &amp; sizing</p>
-            <h1>Size guide</h1>
+            <h1>Size chart</h1>
           </div>
           <div className="unit-switch" role="group" aria-label="Measurement unit">
-            {(["cm", "in"] as Unit[]).map((u) => (
+            {(["in", "cm"] as Unit[]).map((u) => (
               <button key={u} type="button" aria-pressed={unit === u} onClick={() => setUnit(u)}>{u}</button>
             ))}
           </div>
@@ -37,21 +36,19 @@ export default function SizeGuide() {
 
         <div className="size-table-wrap">
           <table className="size-table">
-            <caption className="sr-only">Body measurements by size, in {unit === "cm" ? "centimetres" : "inches"}</caption>
+            <caption className="sr-only">Body measurements by size, in {unit === "in" ? "inches" : "centimetres"}</caption>
             <thead>
               <tr>
                 <th scope="col">Size</th>
-                <th scope="col">UK</th>
                 <th scope="col">Bust</th>
                 <th scope="col">Waist</th>
-                <th scope="col">Hips</th>
+                <th scope="col">Hip</th>
               </tr>
             </thead>
             <tbody>
               {ROWS.map((r) => (
                 <tr key={r.size}>
                   <th scope="row">{r.size}</th>
-                  <td>{r.uk}</td>
                   <td>{fmt(r.bust, unit)}</td>
                   <td>{fmt(r.waist, unit)}</td>
                   <td>{fmt(r.hips, unit)}</td>
@@ -60,6 +57,7 @@ export default function SizeGuide() {
             </tbody>
           </table>
         </div>
+        <p className="size-note">Measurements in {unit === "in" ? "inches" : "centimetres"}.</p>
 
         <div className="size-tips">
           {TIPS.map((t) => (

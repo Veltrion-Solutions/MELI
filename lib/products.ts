@@ -1,6 +1,6 @@
 export type Category = "dresses" | "tops";
 
-export const SIZES = ["XS", "S", "M", "L", "XL"] as const;
+export const SIZES = ["S", "M", "L", "XL", "XXL", "XXXL", "XXXXL"] as const;
 export type Size = (typeof SIZES)[number];
 export type Colour = { name: string; hex: string };
 
@@ -25,13 +25,15 @@ export type Product = {
   inStock: Size[];
 };
 
-/** Body measurements in centimetres, shared by the size guide page and the product popup. */
-export const SIZE_CHART: { size: Size; uk: string; bust: number[]; waist: number[]; hips: number[] }[] = [
-  { size: "XS", uk: "6", bust: [80, 84], waist: [62, 66], hips: [86, 90] },
-  { size: "S", uk: "8", bust: [84, 88], waist: [66, 70], hips: [90, 94] },
-  { size: "M", uk: "10", bust: [88, 92], waist: [70, 74], hips: [94, 98] },
-  { size: "L", uk: "12", bust: [92, 98], waist: [74, 80], hips: [98, 104] },
-  { size: "XL", uk: "14", bust: [98, 104], waist: [80, 86], hips: [104, 110] },
+/** Body measurements in inches, shared by the size guide page and the product popup. */
+export const SIZE_CHART: { size: Size; bust: number; waist: number; hips: number }[] = [
+  { size: "S", bust: 32, waist: 28, hips: 36 },
+  { size: "M", bust: 34, waist: 30, hips: 38 },
+  { size: "L", bust: 36, waist: 32, hips: 40 },
+  { size: "XL", bust: 38, waist: 34, hips: 42 },
+  { size: "XXL", bust: 40, waist: 36, hips: 44 },
+  { size: "XXXL", bust: 42, waist: 38, hips: 46 },
+  { size: "XXXXL", bust: 44, waist: 40, hips: 48 },
 ];
 
 const img = (id: string, ...views: string[]) => views.map((v) => `/images/${id}/${v}.png`);
@@ -49,7 +51,7 @@ export const PRODUCTS: Product[] = [
     description: "A button-front midi with a lace-trimmed V-neck, fitted empire waist and a soft A-line skirt with a front split.",
     details: ["Lightweight cotton-linen blend", "Cap sleeves, covered buttons", "Midi length with front split", "Machine wash cold, gentle cycle"],
     colours: [{ name: "Butter", hex: "#f1e7b4" }, { name: "Ivory", hex: "#f6f1e7" }, { name: "Sage", hex: "#b9c4a7" }],
-    inStock: ["XS", "S", "M", "L"],
+    inStock: ["S", "M", "L"],
   },
   {
     id: "elara-front-tie-top", name: "Elara Front Tie Top", price: 8900, category: "tops", badge: "New",
@@ -58,7 +60,7 @@ export const PRODUCTS: Product[] = [
     description: "A peplum top with puff sleeves, a lace-edged sweetheart neckline and double front ties.",
     details: ["Soft woven cotton", "Elasticated puff sleeves", "Fitted bodice with peplum hem", "Hand wash cold"],
     colours: [{ name: "Powder blue", hex: "#a9bde3" }, { name: "White", hex: "#fbfbfb" }],
-    inStock: ["XS", "S", "M", "L", "XL"],
+    inStock: ["S", "M", "L", "XL", "XXL"],
   },
   {
     id: "mia-puff-sleeve-top", name: "Mia Puff Sleeve Top", price: 6500, category: "tops", badge: "Best seller",
@@ -76,7 +78,7 @@ export const PRODUCTS: Product[] = [
     description: "A corset-style V-neck top with ruffled flutter sleeves and a pleated peplum.",
     details: ["Structured cotton blend", "Lace-trimmed neckline", "Pleated peplum hem", "Hand wash cold"],
     colours: [{ name: "Rose", hex: "#eeb4b8" }, { name: "Ivory", hex: "#f6f1e7" }],
-    inStock: ["XS", "S", "M"],
+    inStock: ["S", "M"],
   },
   {
     id: "emora-shirt-dress", name: "Emora Shirt Dress", price: 11800, category: "dresses", badge: "Best seller",

@@ -108,7 +108,7 @@
 .pd-swatch { width: 30px; height: 30px; border-radius: 50%; border: 1px solid rgba(0, 0, 0, 0.18); box-shadow: 0 0 0 3px #fff; transition: box-shadow 0.25s ease; }
 .pd-swatch[aria-checked="true"] { box-shadow: 0 0 0 3px #fff, 0 0 0 4px #181818; }
 
-.pd-sizes { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; }
+.pd-sizes { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
 .pd-size { height: 42px; border: 1px solid #d6d6d6; border-radius: 8px; font-size: 13px; color: #181818; background: #fff; transition: border-color 0.25s ease, background-color 0.25s ease, color 0.25s ease; }
 .pd-size:hover:not(:disabled) { border-color: #181818; }
 .pd-size[aria-checked="true"] { background: #181818; border-color: #181818; color: #fff; }

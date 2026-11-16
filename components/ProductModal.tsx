@@ -136,18 +136,18 @@ function Details({ product: p }: { product: Product }) {
           {chartOpen && (
             <div className="pd-chart">
               <table className="size-table">
-                <caption className="sr-only">Body measurements in centimetres</caption>
-                <thead><tr><th scope="col">Size</th><th scope="col">UK</th><th scope="col">Bust</th><th scope="col">Waist</th><th scope="col">Hips</th></tr></thead>
+                <caption className="sr-only">Body measurements in inches</caption>
+                <thead><tr><th scope="col">Size</th><th scope="col">Bust</th><th scope="col">Waist</th><th scope="col">Hip</th></tr></thead>
                 <tbody>
                   {SIZE_CHART.map((r) => (
                     <tr key={r.size} aria-current={size === r.size || undefined}>
-                      <th scope="row">{r.size}</th><td>{r.uk}</td>
-                      <td>{r.bust.join("–")}</td><td>{r.waist.join("–")}</td><td>{r.hips.join("–")}</td>
+                      <th scope="row">{r.size}</th>
+                      <td>{r.bust}</td><td>{r.waist}</td><td>{r.hips}</td>
                     </tr>
                   ))}
                 </tbody>
               </table>
-              <p className="pd-small">Measurements in cm. <Link href="/size-guide" onClick={closeProduct}>Full size guide &amp; how to measure</Link></p>
+              <p className="pd-small">Measurements in inches. <Link href="/size-guide" onClick={closeProduct}>Full size guide &amp; how to measure</Link></p>
             </div>
           )}
         </div>

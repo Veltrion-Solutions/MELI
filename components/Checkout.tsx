@@ -1,10 +1,12 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Photo from "./Photo";
 import { useShop, type CartLine } from "./ShopProvider";
 import { COD_MAX, DISTRICTS, FREE_SHIPPING_MIN, SHIPPING_RATES, formatPrice } from "@/lib/products";
+import { placeOrder as submitOrder } from "@/app/checkout/actions";
 
 type Step = "details" | "payment" | "done";
 type Payment = "cod" | "bank" | "card";
@@ -21,16 +23,6 @@ type Details = {
 };
 type Errors = Partial<Record<keyof Details, string>>;
 
-type PlacedOrder = {
-  number: string;
-  details: Details;
-  payment: Payment;
-  lines: CartLine[];
-  subtotal: number;
-  shipping: number;
-  total: number;
-  eta: string;
-};
 
 const STEPS: { id: Step; label: string }[] = [
   { id: "details", label: "Delivery" },
@@ -38,11 +30,6 @@ const STEPS: { id: Step; label: string }[] = [
   { id: "done", label: "Confirmed" },
 ];
 
-const PAYMENT_LABEL: Record<Payment, string> = {
-  cod: "Cash on delivery",
-  bank: "Bank transfer",
-  card: "Credit / debit card",
-};
 
 // Sri Lankan mobile or landline: 0XXXXXXXXX or +94XXXXXXXXX (spaces and dashes allowed).
 const PHONE_RE = /^(?:\+94|0)\d{9}$/;
@@ -59,9 +46,6 @@ function validate(d: Details): Errors {
   return e;
 }
 
-function newOrderNumber() {
-  return `MELI-${Date.now().toString(36).slice(-6).toUpperCase()}`;
-}
 
 export default function Checkout({ defaultName, defaultEmail }: { defaultName: string; defaultEmail: string }) {
   const { cartLines, cartSubtotal, cartCount, bagReady, clearBag } = useShop();
@@ -74,7 +58,8 @@ export default function Checkout({ defaultName, defaultEmail }: { defaultName: s
   const [agree, setAgree] = useState(false);
   const [agreeError, setAgreeError] = useState(false);
   const [placing, setPlacing] = useState(false);
-  const [order, setOrder] = useState<PlacedOrder | null>(null);
+  const [placeError, setPlaceError] = useState("");
+  const router = useRouter();
   const [summaryOpen, setSummaryOpen] = useState(false);
 
   const rate = useMemo(() => {
@@ -110,26 +95,34 @@ export default function Checkout({ defaultName, defaultEmail }: { defaultName: s
   const placeOrder = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!agree) { setAgreeError(true); return; }
+    if (payment === "card") return;
     setPlacing(true);
-    // Not connected to a payment or order system yet — this only simulates the round trip.
-    await new Promise((r) => setTimeout(r, 900));
-    setOrder({
-      number: newOrderNumber(),
-      details,
-      payment,
-      lines: cartLines,
-      subtotal: cartSubtotal,
-      shipping: shipping ?? 0,
-      total,
-      eta: rate?.time ?? "",
-    });
-    clearBag();
-    setPlacing(false);
+    setPlaceError("");
+    let result: Awaited<ReturnType<typeof submitOrder>>;
+    try {
+      result = await submitOrder({
+        items: cartLines.map((l) => ({ id: l.product.id, size: l.size, colour: l.colour, qty: l.qty })),
+        ...details,
+        payment,
+      });
+    } catch {
+      result = { error: "We couldn't reach the shop. Please check your connection and try again." };
+    }
+    if (result.error !== undefined) {
+      setPlaceError(result.error);
+      setPlacing(false);
+      return;
+    }
+    // Saved: show the order's tracking page, then empty the bag.
     setStep("done");
+    router.replace(`/orders/${result.number}?placed=1`);
+    clearBag();
   };
 
-  // ---------- Confirmation ----------
-  if (step === "done" && order) return <Confirmation order={order} />;
+  // ---------- Order placed: on the way to its tracking page ----------
+  if (step === "done") {
+    return <div className="container"><p className="co-wait" role="status">Order placed — opening your order…</p></div>;
+  }
 
   // ---------- Loading / empty bag ----------
   if (!bagReady) {
@@ -282,6 +275,7 @@ export default function Checkout({ defaultName, defaultEmail }: { defaultName: s
               <span>I agree to the <Link href="/shipping-returns" target="_blank">shipping &amp; returns policy</Link>.</span>
             </label>
             {agreeError && <p className="co-error" role="alert">Please accept the policy to place your order.</p>}
+            {placeError && <p className="auth-alert" role="alert">{placeError}</p>}
 
             <div className="co-actions">
               <button type="button" className="co-back" onClick={() => setStep("details")}>← Back to delivery</button>
@@ -350,62 +344,3 @@ function Totals({ subtotal, shipping, total }: { subtotal: number; shipping: num
   );
 }
 
-function Confirmation({ order }: { order: PlacedOrder }) {
-  const { details: d } = order;
-  const first = d.name.trim().split(/\s+/)[0];
-  const track = ["Order placed", order.payment === "bank" ? "Payment received" : "Packed", "Shipped", "Delivered"];
-  return (
-    <div className="container co-done">
-      <div className="co-done-head">
-        <span className="co-done-check" aria-hidden>
-          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5" /></svg>
-        </span>
-        <p className="eyebrow">Order {order.number}</p>
-        <h1>Thank you{first ? `, ${first}` : ""}!</h1>
-        <p className="co-done-lead">Your order is confirmed. We&rsquo;ve sent the details to <strong>{d.email}</strong>.</p>
-      </div>
-
-      <ol className="co-track" aria-label="Order status">
-        {track.map((t, i) => <li key={t} className={i === 0 ? "done" : ""}><span aria-hidden />{t}</li>)}
-      </ol>
-
-      {order.payment === "bank" && (
-        <div className="co-bank">
-          <p className="co-ship-title">Complete your bank transfer</p>
-          <dl>
-            {/* Placeholder account — replace with MELI's real bank details. */}
-            <div><dt>Bank</dt><dd>Commercial Bank · Colombo</dd></div>
-            <div><dt>Account name</dt><dd>MELI (Pvt) Ltd</dd></div>
-            <div><dt>Account no.</dt><dd>1000 0000 0000</dd></div>
-            <div><dt>Amount</dt><dd>{formatPrice(order.total)}</dd></div>
-            <div><dt>Reference</dt><dd>{order.number}</dd></div>
-          </dl>
-          <p>Please use your order number as the reference. We&rsquo;ll ship once the payment clears.</p>
-        </div>
-      )}
-
-      <div className="co-done-grid">
-        <section className="co-done-card" aria-labelledby="co-d1">
-          <h2 id="co-d1">Delivery</h2>
-          <p>{d.name}<br />{d.address}, {d.city}<br />{d.district}{d.postcode && ` ${d.postcode}`}<br />{d.phone}</p>
-          {order.eta && <p className="co-muted">Standard delivery · {order.eta}</p>}
-        </section>
-        <section className="co-done-card" aria-labelledby="co-d2">
-          <h2 id="co-d2">Payment</h2>
-          <p>{PAYMENT_LABEL[order.payment]}</p>
-          <p className="co-muted">{order.payment === "cod" ? `Please have ${formatPrice(order.total)} ready on delivery.` : "Awaiting transfer."}</p>
-        </section>
-        <section className="co-done-card co-done-items" aria-labelledby="co-d3">
-          <h2 id="co-d3">Items</h2>
-          <Lines lines={order.lines} />
-          <Totals subtotal={order.subtotal} shipping={order.shipping} total={order.total} />
-        </section>
-      </div>
-
-      <div className="co-done-actions">
-        <Link href="/new" className="btn btn-solid">Continue shopping</Link>
-        <Link href="/account" className="btn btn-outline">My account</Link>
-      </div>
-    </div>
-  );
-}

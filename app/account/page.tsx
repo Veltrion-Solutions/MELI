@@ -6,6 +6,8 @@ import Footer from "@/components/Footer";
 import { createClient } from "@/lib/supabase/server";
 import { supabaseReady } from "@/lib/supabase/config";
 import { logout } from "@/app/login/actions";
+import OrderRow from "@/components/OrderRow";
+import { ORDER_COLUMNS, type Order } from "@/lib/orders";
 
 export const metadata = { title: "My account - MELI" };
 
@@ -19,6 +21,9 @@ export default async function Page() {
   const { data: isAdmin } = await supabase.rpc("is_admin");
   const name = (user.user_metadata?.full_name as string | undefined)?.trim();
   const since = new Date(user.created_at).toLocaleDateString("en-GB", { month: "long", year: "numeric" });
+  const { data: recent } = await supabase
+    .from("orders").select(ORDER_COLUMNS).eq("user_id", user.id).order("placed_at", { ascending: false }).limit(3);
+  const orders = (recent ?? []) as unknown as Order[];
 
   return (
     <Shop>
@@ -49,8 +54,19 @@ export default async function Page() {
 
             <section className="account-card" aria-labelledby="acc-orders">
               <h2 id="acc-orders">Orders</h2>
-              <p className="account-empty">You haven&rsquo;t placed any orders yet.</p>
-              <Link href="/new" className="btn btn-outline">Shop new arrivals</Link>
+              {orders.length === 0 ? (
+                <>
+                  <p className="account-empty">You haven&rsquo;t placed any orders yet.</p>
+                  <Link href="/new" className="btn btn-outline">Shop new arrivals</Link>
+                </>
+              ) : (
+                <>
+                  <ul className="orders-list compact">
+                    {orders.map((o) => <OrderRow key={o.id} order={o} />)}
+                  </ul>
+                  <Link href="/orders" className="auth-link">View all orders &amp; track</Link>
+                </>
+              )}
             </section>
           </div>
 

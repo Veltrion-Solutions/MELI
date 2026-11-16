@@ -6,6 +6,8 @@ export default function AdminBar({ email }: { email?: string }) {
     <header className="admin-bar">
       <Link href="/admin" className="admin-brand">MELI <span>Admin</span></Link>
       <nav className="admin-nav">
+        {email && <Link href="/admin">Products</Link>}
+        {email && <Link href="/admin/orders">Orders</Link>}
         <Link href="/" target="_blank">View shop ↗</Link>
         {email && <span className="admin-who">{email}</span>}
         {email && (

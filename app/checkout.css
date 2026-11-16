@@ -106,12 +106,6 @@
 .co-done-lead strong { color: #181818; font-weight: 500; overflow-wrap: anywhere; }
 @keyframes co-pop { from { transform: scale(0.4); opacity: 0; } to { transform: none; opacity: 1; } }
 
-.co-track { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(4, 1fr); font-size: 12px; color: #9a9a9a; text-align: center; }
-.co-track li { position: relative; display: grid; justify-items: center; gap: 10px; }
-.co-track li span { width: 14px; height: 14px; border-radius: 50%; border: 1px solid #c8c8c8; background: #fff; position: relative; z-index: 1; }
-.co-track li + li::before { content: ""; position: absolute; top: 7px; right: 50%; width: 100%; height: 1px; background: #d6d6d6; }
-.co-track li.done { color: #181818; font-weight: 600; }
-.co-track li.done span { background: #181818; border-color: #181818; }
 
 .co-bank { background: #f7f7f7; border-radius: var(--radius); padding: 20px 22px; display: grid; gap: 12px; font-size: 13.5px; color: #6b6b6b; line-height: 1.55; }
 .co-bank dl { margin: 0; display: grid; gap: 6px; }
@@ -149,5 +143,71 @@
   .co-back { text-align: center; padding: 8px 0; }
   .co-done-grid { grid-template-columns: 1fr; }
   .co-bank dl > div { grid-template-columns: 1fr; gap: 0; }
-  .co-track { font-size: 11px; }
+}
+
+/* ---------- Order tracking ---------- */
+.track { display: grid; gap: 28px; max-width: 820px; }
+.track-head { display: grid; gap: 10px; justify-items: start; }
+.track-head .section-head { margin: 0; }
+.track-meta { font-size: 13.5px; color: #6b6b6b; }
+
+.track-now { display: flex; justify-content: space-between; gap: 20px 32px; flex-wrap: wrap; padding: 22px 24px; border-radius: var(--radius); background: #181818; color: #fff; }
+.track-now.cancelled { background: #f7f0ef; color: #181818; }
+.track-now-label { font-size: 11.5px; letter-spacing: 0.08em; text-transform: uppercase; opacity: 0.7; }
+.track-now-status { font-family: var(--serif); font-size: 24px; text-transform: uppercase; letter-spacing: 0.02em; margin-top: 6px; }
+.track-now-text { font-size: 14px; line-height: 1.6; opacity: 0.85; margin-top: 4px; }
+.track-note { margin-top: 12px; padding: 10px 14px; border-radius: 8px; background: rgba(255, 255, 255, 0.12); font-size: 13.5px; line-height: 1.5; }
+.track-now.cancelled .track-note { background: #fff; }
+.track-eta { align-self: flex-end; font-size: 14px; display: grid; gap: 6px; }
+
+/* Vertical step-by-step timeline */
+.track-steps { list-style: none; margin: 0; padding: 0; display: grid; }
+.track-step { position: relative; display: grid; grid-template-columns: 36px 1fr; gap: 16px; padding-bottom: 26px; }
+.track-step:last-child { padding-bottom: 0; }
+.track-step:not(:last-child)::before { content: ""; position: absolute; left: 17.5px; top: 36px; bottom: 0; width: 1px; background: #dcdcdc; }
+.track-step.done:not(:last-child)::before { background: #181818; }
+.track-dot { position: relative; z-index: 1; width: 36px; height: 36px; border-radius: 50%; display: grid; place-items: center; font-size: 13px; border: 1px solid #d6d6d6; background: #fff; color: #9a9a9a; }
+.track-step.done .track-dot { background: #181818; border-color: #181818; color: #fff; }
+.track-step.current .track-dot { border: 2px solid #181818; color: #181818; font-weight: 600; box-shadow: 0 0 0 0 rgba(24, 24, 24, 0.25); animation: track-pulse 2s ease-out infinite; }
+.track-step.cancelled .track-dot { border-color: #b3261e; color: #b3261e; animation: none; }
+.track-body { padding-top: 7px; display: grid; gap: 3px; }
+.track-title { font-size: 14.5px; font-weight: 500; color: #181818; }
+.track-text { font-size: 13.5px; color: #6b6b6b; line-height: 1.5; }
+.track-time { font-size: 12.5px; color: #181818; margin-top: 2px; }
+.track-courier { margin-top: 6px; font-size: 13px; color: #181818; padding: 8px 12px; background: #f7f7f7; border-radius: 8px; justify-self: start; }
+.track-courier strong { font-weight: 600; }
+.track-step.todo .track-title, .track-step.off .track-title { color: #9a9a9a; }
+.track-step.todo .track-text, .track-step.off .track-text { color: #b0b0b0; }
+.track-step.off { opacity: 0.6; }
+@keyframes track-pulse { 0% { box-shadow: 0 0 0 0 rgba(24, 24, 24, 0.25); } 70% { box-shadow: 0 0 0 10px rgba(24, 24, 24, 0); } 100% { box-shadow: 0 0 0 0 rgba(24, 24, 24, 0); } }
+@media (prefers-reduced-motion: reduce) { .track-step.current .track-dot, .co-done-check { animation: none; } }
+.track-help { font-size: 13px; color: #6b6b6b; text-align: center; }
+.track-help a { color: #181818; text-decoration: underline; text-underline-offset: 3px; }
+
+/* ---------- My orders list ---------- */
+.orders-list { list-style: none; margin: 8px 0 0; padding: 0; display: grid; gap: 12px; max-width: 820px; }
+.order-row { display: grid; grid-template-columns: 1fr auto auto; align-items: center; gap: 12px 24px; padding: 18px 20px; border: 1px solid #e6e6e6; border-radius: var(--radius); background: #fff; transition: border-color 0.25s ease, box-shadow 0.25s ease; }
+.order-row:hover { border-color: #181818; box-shadow: 0 6px 20px rgba(0, 0, 0, 0.05); }
+.order-row-num { font-size: 14.5px; font-weight: 600; color: #181818; letter-spacing: 0.02em; }
+.order-row-meta { font-size: 13px; color: #6b6b6b; margin-top: 3px; }
+.order-row-status { display: grid; gap: 8px; justify-items: end; }
+.order-row-go { font-size: 13px; color: #181818; white-space: nowrap; }
+.order-mini { display: flex; gap: 3px; }
+.order-mini span { width: 16px; height: 4px; border-radius: 4px; background: #e2e2e2; }
+.order-mini span.on { background: #181818; }
+.order-pill { display: inline-block; padding: 4px 10px; border-radius: 999px; font-size: 11.5px; font-weight: 500; letter-spacing: 0.02em; background: #f1f1f1; color: #181818; white-space: nowrap; }
+.order-pill.placed { background: #fdf3e1; color: #8a5a00; }
+.order-pill.confirmed, .order-pill.packed { background: #e9f0fb; color: #1f4f8f; }
+.order-pill.shipped { background: #efe9fb; color: #4f2f8f; }
+.order-pill.delivered { background: #e7f4ea; color: #1d6b34; }
+.order-pill.cancelled { background: #fdf1f0; color: #8c2a22; }
+.orders-list.compact { margin: 0; width: 100%; gap: 8px; }
+.orders-list.compact .order-row { grid-template-columns: 1fr auto; padding: 12px 14px; }
+.orders-list.compact .order-row-go, .orders-list.compact .order-mini { display: none; }
+
+@media (max-width: 600px) {
+  .track-now { padding: 18px; }
+  .track-now-status { font-size: 20px; }
+  .order-row { grid-template-columns: 1fr auto; padding: 14px 16px; }
+  .order-row-go { display: none; }
 }

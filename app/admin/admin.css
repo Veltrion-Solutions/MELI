@@ -118,3 +118,17 @@
   .admin-panel { padding: 18px 16px; }
   .admin-photos { grid-template-columns: repeat(auto-fill, minmax(104px, 1fr)); }
 }
+
+/* ---------- Orders ---------- */
+.admin-filters { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
+.admin-filters a { padding: 6px 14px; border-radius: 999px; border: 1px solid #d6d6d6; background: #fff; font-size: 13px; color: #181818; }
+.admin-filters a[aria-current="page"] { background: #181818; border-color: #181818; color: #fff; }
+.admin-items { min-width: 0; font-size: 13.5px; }
+.admin-address { font-size: 14px; line-height: 1.6; }
+.admin-timeline { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; font-size: 13.5px; }
+.admin-timeline li { display: flex; justify-content: space-between; gap: 12px; color: #9a9a9a; }
+.admin-timeline li.on { color: #181818; }
+.admin-timeline li.on span:first-child::before { content: "✓ "; }
+.admin-timeline li.cancelled { color: #b3261e; }
+.admin-next { width: 100%; text-align: center; }
+.admin-panel .btn:disabled { opacity: 0.6; cursor: progress; }

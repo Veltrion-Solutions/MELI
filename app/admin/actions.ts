@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/server";
 import { SUPABASE_URL, supabaseReady } from "@/lib/supabase/config";
 import { getAdmin } from "@/lib/admin";
 import { SIZES } from "@/lib/products";
+import { ORDER_STATUSES } from "@/lib/orders";
 
 export type SaveState = { ok?: boolean; error?: string; at?: number } | undefined;
 
@@ -159,4 +160,40 @@ export async function createProduct(_: SaveState, form: FormData): Promise<SaveS
   if (error) return { error: `Couldn't add the product: ${error.message}` };
   refreshShop();
   redirect(`/admin/products/${id}?created=1`);
+}
+
+// ---------- Orders ----------
+
+export type OrderSaveState = { ok?: boolean; error?: string; at?: number } | undefined;
+
+const field = (form: FormData, name: string, max: number) => String(form.get(name) ?? "").trim().slice(0, max);
+
+/** Moves an order to a new step and/or updates its courier, tracking number and customer note. */
+export async function updateOrder(_: OrderSaveState, form: FormData): Promise<OrderSaveState> {
+  const admin = await getAdmin();
+  if (!admin) return { error: "Your admin session has ended. Please sign in again." };
+  const number = String(form.get("number") ?? "");
+  const status = String(form.get("status") ?? "");
+  if (!(ORDER_STATUSES as string[]).includes(status)) return { error: "Choose a valid status." };
+
+  const { error, count } = await admin.supabase
+    .from("orders")
+    .update(
+      {
+        status,
+        courier: field(form, "courier", 80),
+        tracking_number: field(form, "tracking_number", 80),
+        status_note: field(form, "status_note", 300),
+      },
+      { count: "exact" },
+    )
+    .eq("number", number);
+  if (error || count === 0) {
+    console.error("[admin] updateOrder failed:", error);
+    return { error: "Couldn't save. Has the orders migration been run?" };
+  }
+  revalidatePath("/admin/orders");
+  revalidatePath(`/admin/orders/${number}`);
+  revalidatePath(`/orders/${number}`);
+  return { ok: true, at: Date.now() };
 }

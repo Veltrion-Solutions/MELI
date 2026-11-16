@@ -94,6 +94,24 @@ export const PRODUCTS: Product[] = [
 /** Order value (Rs) above which shipping is free — matches the announcement bar. */
 export const FREE_SHIPPING_MIN = 12000;
 
+/** Flat delivery fee by area (Rs) for orders under FREE_SHIPPING_MIN. Placeholder — replace with MELI's real rates. */
+export const SHIPPING_RATES = [
+  { area: "Colombo & suburbs", time: "1–2 working days", fee: 350 },
+  { area: "Western Province", time: "2–3 working days", fee: 400 },
+  { area: "Rest of the island", time: "3–5 working days", fee: 450 },
+] as const;
+
+/** Sri Lanka's 25 districts, each mapped to a row in SHIPPING_RATES. */
+export const DISTRICTS: { name: string; rate: 0 | 1 | 2 }[] = [
+  { name: "Colombo", rate: 0 }, { name: "Gampaha", rate: 1 }, { name: "Kalutara", rate: 1 },
+  ...["Ampara", "Anuradhapura", "Badulla", "Batticaloa", "Galle", "Hambantota", "Jaffna", "Kandy", "Kegalle",
+    "Kilinochchi", "Kurunegala", "Mannar", "Matale", "Matara", "Monaragala", "Mullaitivu", "Nuwara Eliya",
+    "Polonnaruwa", "Puttalam", "Ratnapura", "Trincomalee", "Vavuniya"].map((name) => ({ name, rate: 2 as const })),
+];
+
+/** Largest order (Rs) accepted with cash on delivery. */
+export const COD_MAX = 30000;
+
 export const FEATURED_ID = "sierra-midi-dress";
 export const PROMO_IMAGE = "/images/meli-new-collection-promo.png";
 export const STORY_IMAGE = "/images/emora-shirt-dress/front.png";

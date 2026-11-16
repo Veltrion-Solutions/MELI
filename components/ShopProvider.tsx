@@ -17,6 +17,8 @@ type Shop = {
   cartLines: CartLine[];
   cartSubtotal: number;
   cartOpen: boolean;
+  /** True once the signed-in customer's saved bag has loaded (false while checking, or when signed out). */
+  bagReady: boolean;
   openCart: () => void;
   closeCart: () => void;
   /** Adds one in the chosen size/colour and opens the bag; sends signed-out shoppers to /login first. */
@@ -194,11 +196,12 @@ export function ShopProvider({ products, children }: { products: Product[]; chil
   );
   const cartCount = useMemo(() => cartLines.reduce((n, l) => n + l.qty, 0), [cartLines]);
   const cartSubtotal = useMemo(() => cartLines.reduce((n, l) => n + l.qty * l.product.price, 0), [cartLines]);
+  const bagReady = owner !== undefined && owner !== null && loadedFor === owner;
   const viewing = useMemo(() => products.find((p) => p.id === viewingId) ?? null, [products, viewingId]);
 
   const value = useMemo(
-    () => ({ products, cartCount, cartLines, cartSubtotal, cartOpen, openCart, closeCart, addToBag, setQty, removeFromBag, clearBag, viewing, openProduct, closeProduct, filter, showCategory }),
-    [products, cartCount, cartLines, cartSubtotal, cartOpen, openCart, closeCart, addToBag, setQty, removeFromBag, clearBag, viewing, openProduct, closeProduct, filter, showCategory],
+    () => ({ products, cartCount, cartLines, cartSubtotal, cartOpen, bagReady, openCart, closeCart, addToBag, setQty, removeFromBag, clearBag, viewing, openProduct, closeProduct, filter, showCategory }),
+    [products, cartCount, cartLines, cartSubtotal, cartOpen, bagReady, openCart, closeCart, addToBag, setQty, removeFromBag, clearBag, viewing, openProduct, closeProduct, filter, showCategory],
   );
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }

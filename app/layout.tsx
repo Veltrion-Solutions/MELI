@@ -4,6 +4,7 @@ import "./globals.css";
 import "./theme.css";
 import "./animations.css";
 import "./cart.css";
+import "./checkout.css";
 import ScrollEffects from "@/components/ScrollEffects";
 
 const serif = Montserrat({ subsets: ["latin"], weight: ["400", "500", "600", "800"], variable: "--font-serif" });

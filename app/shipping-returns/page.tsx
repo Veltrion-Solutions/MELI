@@ -1,16 +1,9 @@
 import Shop from "@/components/Shop";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
-import { FREE_SHIPPING_MIN, formatPrice } from "@/lib/products";
+import { FREE_SHIPPING_MIN, SHIPPING_RATES as RATES, formatPrice } from "@/lib/products";
 
 export const metadata = { title: "Shipping & returns - MELI" };
-
-// Placeholder rates and timings — replace with MELI's real policy.
-const RATES = [
-  { area: "Colombo & suburbs", time: "1–2 working days", fee: 350 },
-  { area: "Western Province", time: "2–3 working days", fee: 400 },
-  { area: "Rest of the island", time: "3–5 working days", fee: 450 },
-];
 
 const RETURN_STEPS = [
   { title: "Start a return", text: "Contact us within 30 days of delivery with your order number and the items you'd like to return." },

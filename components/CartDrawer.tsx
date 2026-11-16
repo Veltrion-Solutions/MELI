@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
+import { useRouter } from "next/navigation";
 import Photo from "./Photo";
 import { useShop } from "./ShopProvider";
 import { FREE_SHIPPING_MIN, formatPrice } from "@/lib/products";
@@ -8,10 +9,10 @@ import { FREE_SHIPPING_MIN, formatPrice } from "@/lib/products";
 export default function CartDrawer() {
   const { cartOpen, closeCart, cartLines, cartCount, cartSubtotal, setQty, removeFromBag, clearBag } = useShop();
   const panel = useRef<HTMLElement>(null);
-  const [note, setNote] = useState(false);
+  const router = useRouter();
 
   useEffect(() => {
-    if (!cartOpen) { setNote(false); return; }
+    if (!cartOpen) return;
     const onKey = (e: KeyboardEvent) => e.key === "Escape" && closeCart();
     window.addEventListener("keydown", onKey);
     const prev = document.body.style.overflow;
@@ -86,8 +87,7 @@ export default function CartDrawer() {
             <div className="cart-foot">
               <div className="cart-row"><span>Subtotal</span><strong>{formatPrice(cartSubtotal)}</strong></div>
               <p className="cart-small">Shipping and taxes are calculated at checkout.</p>
-              <button type="button" className="btn btn-solid cart-checkout" onClick={() => setNote(true)}>Checkout</button>
-              {note && <p className="cart-note" role="status">Checkout isn&rsquo;t connected yet — this is a demo bag.</p>}
+              <button type="button" className="btn btn-solid cart-checkout" onClick={() => { closeCart(); router.push("/checkout"); }}>Checkout</button>
               <button type="button" className="cart-clear" onClick={clearBag}>Clear bag</button>
             </div>
           </>

@@ -2,7 +2,7 @@ import Link from "next/link";
 import Photo from "./Photo";
 import { DISTRICTS, SHIPPING_RATES, formatPrice } from "@/lib/products";
 import {
-  ORDER_STEPS, PAYMENT_LABEL, STATUS_LABEL, STEP_TEXT, formatOrderDate, itemCount, stepTime, type Order, type OrderStep,
+  BANK_DETAILS, ORDER_STEPS, PAYMENT_LABEL, STATUS_LABEL, STEP_TEXT, formatOrderDate, itemCount, stepTime, type Order, type OrderStep,
 } from "@/lib/orders";
 
 export default function OrderTracking({ order: o, justPlaced }: { order: Order; justPlaced: boolean }) {
@@ -94,10 +94,7 @@ export default function OrderTracking({ order: o, justPlaced }: { order: Order; 
         <div className="co-bank">
           <p className="co-ship-title">Complete your bank transfer</p>
           <dl>
-            {/* Placeholder account — replace with MELI's real bank details. */}
-            <div><dt>Bank</dt><dd>Commercial Bank · Colombo</dd></div>
-            <div><dt>Account name</dt><dd>MELI (Pvt) Ltd</dd></div>
-            <div><dt>Account no.</dt><dd>1000 0000 0000</dd></div>
+            {BANK_DETAILS.map(([k, v]) => <div key={k}><dt>{k}</dt><dd>{v}</dd></div>)}
             <div><dt>Amount</dt><dd>{formatPrice(o.total)}</dd></div>
             <div><dt>Reference</dt><dd>{o.number}</dd></div>
           </dl>

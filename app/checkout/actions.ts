@@ -1,9 +1,13 @@
 "use server";
 
+import { after } from "next/server";
+import { headers } from "next/headers";
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { supabaseReady } from "@/lib/supabase/config";
-import type { Payment } from "@/lib/orders";
+import { ORDER_COLUMNS, type Order, type Payment } from "@/lib/orders";
+import { sendEmail } from "@/lib/email";
+import { orderConfirmationEmail } from "@/lib/order-email";
 
 export type PlaceOrderInput = {
   items: { id: string; size: string; colour: string; qty: number }[];
@@ -19,6 +23,15 @@ export type PlaceOrderInput = {
 };
 
 export type PlaceOrderResult = { number: string; error?: undefined } | { error: string; number?: undefined };
+
+/** Public address of the shop, for links and images in emails. */
+async function siteUrl() {
+  const env = process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/+$/, "");
+  if (env) return env;
+  const h = await headers();
+  const host = h.get("x-forwarded-host") ?? h.get("host");
+  return `${h.get("x-forwarded-proto") ?? "http"}://${host}`;
+}
 
 /** Saves the order through the database's place_order(), which prices and checks everything itself. */
 export async function placeOrder(input: PlaceOrderInput): Promise<PlaceOrderResult> {
@@ -45,7 +58,21 @@ export async function placeOrder(input: PlaceOrderInput): Promise<PlaceOrderResu
     console.error("[checkout] place_order failed:", error);
     return { error: "We couldn't place your order. Please try again in a moment." };
   }
-  revalidatePath("/account");
-  revalidatePath("/orders");
-  return { number: data };
+  const number = data;
+
+  // Confirmation email with the saved order (prices as charged). Sent after the response,
+  // so the customer isn't kept waiting; a failed send never affects the order.
+  const { data: row } = await supabase.from("orders").select(ORDER_COLUMNS).eq("number", number).maybeSingle();
+  if (row) {
+    const order = row as unknown as Order;
+    const site = await siteUrl();
+    after(async () => {
+      const mail = orderConfirmationEmail(order, site);
+      const sent = await sendEmail({ to: order.email, ...mail });
+      if (sent) console.info(`[checkout] Confirmation email sent for ${order.number}`);
+    });
+  }
+
+  revalidatePath("/account", "layout");
+  return { number };
 }

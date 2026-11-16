@@ -8,6 +8,13 @@ export const ORDER_STATUSES: OrderStatus[] = [...ORDER_STEPS, "cancelled"];
 export type Payment = "cod" | "bank";
 export const PAYMENT_LABEL: Record<Payment, string> = { cod: "Cash on delivery", bank: "Bank transfer" };
 
+/** Shown on the tracking page and in the confirmation email. Placeholder — replace with MELI's real account. */
+export const BANK_DETAILS: [label: string, value: string][] = [
+  ["Bank", "Commercial Bank · Colombo"],
+  ["Account name", "MELI (Pvt) Ltd"],
+  ["Account no.", "1000 0000 0000"],
+];
+
 export const STATUS_LABEL: Record<OrderStatus, string> = {
   placed: "Order placed",
   confirmed: "Confirmed",

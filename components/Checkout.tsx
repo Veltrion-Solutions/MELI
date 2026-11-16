@@ -47,11 +47,14 @@ function validate(d: Details): Errors {
 }
 
 
-export default function Checkout({ defaultName, defaultEmail }: { defaultName: string; defaultEmail: string }) {
+/** Saved profile details used to pre-fill the form. */
+export type CheckoutDefaults = { name: string; email: string; phone: string; address: string; city: string; district: string; postcode: string };
+
+export default function Checkout({ defaults }: { defaults: CheckoutDefaults }) {
   const { cartLines, cartSubtotal, cartCount, bagReady, clearBag } = useShop();
   const [step, setStep] = useState<Step>("details");
   const [details, setDetails] = useState<Details>({
-    name: defaultName, email: defaultEmail, phone: "", address: "", city: "", district: "", postcode: "", notes: "",
+    ...defaults, notes: "",
   });
   const [errors, setErrors] = useState<Errors>({});
   const [payment, setPayment] = useState<Payment>("cod");

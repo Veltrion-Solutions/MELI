@@ -27,7 +27,7 @@ export default function OrderTracking({ order: o, justPlaced }: { order: Order; 
         </div>
       ) : (
         <div className="track-head">
-          <Link href="/orders" className="co-back">&larr; My orders</Link>
+          <Link href="/account/orders" className="co-back">&larr; My orders</Link>
           <div className="section-head">
             <p className="eyebrow">Track order</p>
             <h1>{o.number}</h1>
@@ -150,7 +150,7 @@ export default function OrderTracking({ order: o, justPlaced }: { order: Order; 
         Questions about this order? Contact us with your order number, or see <Link href="/shipping-returns">shipping &amp; returns</Link>.
       </p>
       <div className="co-done-actions">
-        {justPlaced && <Link href="/orders" className="btn btn-outline">View all orders</Link>}
+        {justPlaced && <Link href="/account/orders" className="btn btn-outline">View all orders</Link>}
         <Link href="/new" className="btn btn-solid">Continue shopping</Link>
       </div>
     </div>

@@ -24,5 +24,5 @@ export async function updatePassword(_: PwState, form: FormData): Promise<PwStat
     if (error.code === "weak_password") return { error: "Supabase rejected that password as too weak. Please choose a stronger one." };
     return { error: "We couldn't update your password. Your link may have expired — please request a new one." };
   }
-  redirect("/account");
+  redirect("/account?saved=password");
 }
